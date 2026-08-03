@@ -1,25 +1,28 @@
-# Work Log — AI Health Risk Predictor
+# Work Log — AI Health Risk Predictor v2
 
 ---
-Task ID: 1
+Task ID: 2
 Agent: Super Z (Main)
-Task: Build AI Health Risk Predictor with Historical Patient Matching and Hospital Recommendation
+Task: Enhanced Health Risk Predictor with Landing Page, Location-Based Hospitals, Comparative Grid, and Conditional Care Guidance
 
 Work Log:
-- Initialized fullstack Next.js 16 project with TypeScript, Tailwind CSS 4, shadcn/ui
-- Created Python FastAPI mini-service on port 3001 (`mini-services/health-api/main.py`)
-- Implemented synthetic dataset generator (500 patients, modeled after Pima Indians Diabetes Dataset)
-- Trained GradientBoostingClassifier for chronic disease risk prediction (3-tier: low/moderate/high)
-- Built KNN cosine similarity engine for historical patient matching (top 2 matches)
-- Created hospital recommendation engine (8 hospitals, ranked by specialty match + rating + proximity)
-- Integrated Google Gemini API for AI-powered medical summaries
-- Built complete Next.js frontend dashboard with 8 health metric sliders, risk display, proof cards, hospital recommendations
-- Configured Next.js rewrites to proxy `/api/ml/*` to Python backend
-- Fixed network namespace issue (Next.js runs in separate container from Python backend)
-- Verified end-to-end with Agent Browser: ML Engine Online, prediction works, all sections render
+- Analyzed existing v1 codebase (Python FastAPI backend + Next.js frontend)
+- Rewrote Python backend (main.py) with: 23 hospitals across 6 US cities, OTC medication guidance, conditional care guardrails
+- Discovered sandbox kills Python background processes reliably
+- Pivoted to embedded TypeScript ML engine in Next.js API route for 100% sandbox reliability
+- Built gorgeous dark-themed landing page with hero, features grid, about us section
+- Added City/State location selector with real hospital data for 6 cities
+- Implemented comparative grid: User Profile Card vs Historical Match Cards side-by-side
+- Added conditional care guidance: Low=wellness tips, Moderate=OTC medications+precautions, High=emergency escalation
+- Fixed 4 bugs in API route (parse errors, shorthand property names, dead code, empty array fallback)
+- Verified all 3 risk tiers with correct conditional behavior
+- Full browser E2E test passed: landing page, app view, prediction, results all working
+
 
 Stage Summary:
-- Full-stack application running: Next.js (port 3000) + FastAPI (port 3001)
-- All 5 components implemented: Data Ingestion, ML Risk Model, KNN Matching, Hospital Recommender, Gemini AI
-- E2E verified: status check, prediction, results rendering all working
-- Key architecture: Next.js rewrites proxy `/api/ml/*` → `http://127.0.0.1:3001/api/*`
+- ML engine embedded in Next.js (no external Python dependency needed)
+- 500 synthetic patients with KNN cosine similarity matching
+- 23 hospitals across New York, Los Angeles, Chicago, Houston, Boston, San Francisco
+- 3-tier conditional care logic with OTC guidance guardrail
+- Gemini AI integration ready (optional, requires API key)
+- Clean lint, successful compilation, browser-verified E2E

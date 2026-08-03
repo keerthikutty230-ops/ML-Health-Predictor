@@ -1,0 +1,235 @@
+   100→  const handleReset = () => { setInputs({ ...DEFAULT_INPUTS }); setResult(null); setError(null); };
+   101→  const rc = result ? RISK_CFG[result.risk.risk_tier] : null;
+   102→
+   103→  /* ======================= LANDING PAGE ======================= */
+   104→  if (view === "landing") {
+   105→    return (
+   106→      <TooltipProvider>
+   107→      <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 text-white">
+   108→        {/* NAV */
+   109→        <nav className="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-white/10">
+   110→          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+   111→            <div className="flex items-center gap-2.5"><div className="h-9 w-9 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center"><Stethoscope className="h-4.5 w-4.5 text-white" /></div><span className="font-bold text-lg tracking-tight">HealthPredict AI</span></div>
+   112→            <div className="flex items-center gap-3">
+   113→              <Badge variant="outline" className={apiStatus === "online" ? "border-emerald-500/50 text-emerald-400 bg-emerald-500/10" : "border-red-500/50 text-red-400 bg-red-500/10"}>
+   114→                <span className={"h-1.5 w-1.5 rounded-full mr-1.5 " + (apiStatus === "online" ? "bg-emerald-400" : "bg-red-400 animate-pulse")} />{apiStatus === "online" ? "ML Online" : "Connecting"}
+   115→              </Badge>
+   116→              <Button onClick={() => setView("app")} className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-lg shadow-emerald-500/25 h-9 text-sm font-semibold px-5">Launch App</Button>
+   117→            </div>
+   118→          </div>
+   119→        </nav>
+   120→
+   121→        {/* HERO */}
+   122→        <motion.section style={{ opacity: heroOpacity, scale: heroScale }} className="min-h-screen flex items-center justify-center px-4 pt-16">
+   123→          <div className="max-w-4xl mx-auto text-center space-y-8">
+   124→            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+   125→              <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 mb-6 px-4 py-1.5 text-sm">ML-Powered Health Intelligence</Badge>
+   126→              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+   127→                Know Your Health <br/><span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">Before It Knows You</span>
+   128→              </h1>
+   129→            </motion.div>
+   130→            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15 }} className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+   131→              AI-driven chronic disease risk assessment with patient similarity matching, location-aware hospital recommendations, and intelligent care guidance — all in seconds.
+   132→            </motion.p>
+   133→            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }} className="flex flex-col sm:flex-row gap-4 justify-center">
+   134→              <Button size="lg" onClick={() => setView("app")} className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-xl shadow-emerald-500/30 h-12 text-base font-semibold px-8"><Search className="h-5 w-5 mr-2" />Start Health Assessment</Button>
+   135→              <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 h-12 text-base px-8" onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}>Learn More <ChevronDown className="h-4 w-4 ml-1" /></Button>
+   136→            </motion.div>
+   137→            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.6 }} className="flex items-center justify-center gap-8 pt-4 text-sm text-slate-400">
+   138→              <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-400" />500 Patient DB</span>
+   139→              <span className="flex items-center gap-1.5"><Gauge className="h-4 w-4 text-teal-400" />ML Classification</span>
+   140→              <span className="flex items-center gap-1.5"><Building2 className="h-4 w-4 text-cyan-400" />23 Hospitals</span>
+   141→            </motion.div>
+   142→          </div>
+   143→        </motion.section>
+   144→
+   145→        {/* FEATURES GRID */}
+   146→        <section className="py-20 px-4"><div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+   147→          {[
+   148→            { icon: <Gauge className="h-6 w-6" />, title: "ML Risk Engine", desc: "Gradient Boosting Classifier trained on 500 synthetic patient records evaluates 8 clinical biomarkers for chronic disease risk." },
+   149→            { icon: <Users className="h-6 w-6" />, title: "Patient Similarity Proof", desc: "KNN cosine similarity finds the top 2 closest historical cases, showing overlapping traits and clinical progression as evidence." },
+   150→            { icon: <MapPinned className="h-6 w-6" />, title: "Location-Aware Hospitals", desc: "Select your city and state to get matched with nearby specialized facilities and doctors, sorted by relevance." },
+   151→            { icon: <ClipboardList className="h-6 w-6" />, title: "Conditional Care Guidance", desc: "Moderate risk shows OTC precautions. High risk triggers emergency escalation — no unsafe medication suggestions." },
+   152→            { icon: <Sparkles className="h-6 w-6" />, title: "Gemini AI Summary", desc: "Optional integration with Google Gemini generates a compassionate, professional executive health summary." },
+   153→            { icon: <Shield className="h-6 w-6" />, title: "Privacy-First Design", desc: "All data is synthetic and anonymized. No personal health data is stored or transmitted beyond your session." },
+   154→          ].map((f, i) => (
+   155→            <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.08 }}>
+   156→              <Card className="bg-white/5 border-white/10 hover:bg-white/10 hover:border-emerald-500/30 transition-all h-full"><CardContent className="pt-6"><div className="h-12 w-12 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 mb-4">{f.icon}</div><h3 className="font-semibold text-white mb-2">{f.title}</h3><p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p></CardContent></Card>
+   157→            </motion.div>
+   158→          ))}
+   159→        </div></section>
+   160→
+   161→        {/* ABOUT US */}
+   162→        <section id="about" className="py-20 px-4"><div className="max-w-4xl mx-auto">
+   163→          <motion.div {...fadeIn} whileInView>
+   164→            <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20"><CardContent className="pt-8 pb-8 text-center space-y-6">
+   165→              <div className="h-16 w-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center mx-auto"><Stethoscope className="h-8 w-8 text-emerald-400" /></div>
+   166→              <h2 className="text-2xl sm:text-3xl font-bold">About HealthPredict AI</h2>
+   167→              <p className="text-slate-300 max-w-2xl mx-auto leading-relaxed">Our mission is to make health risk intelligence transparent, accessible, and actionable. We believe everyone deserves to understand their health metrics in context — with evidence from comparable patient histories and clear pathways to professional care.</p>
+   168→              <div className="grid sm:grid-cols-3 gap-6 pt-4">
+   169→                <div className="space-y-2"><div className="text-3xl font-bold text-emerald-400">500+</div><div className="text-sm text-slate-400">Synthetic Patient Records</div></div>
+   170→                <div className="space-y-2"><div className="text-3xl font-bold text-teal-400">23</div><div className="text-sm text-slate-400">Partner Hospital Facilities</div></div>
+   171→                <div className="space-y-2"><div className="text-3xl font-bold text-cyan-400">6</div><div className="text-sm text-slate-400">US Cities Covered</div></div>
+   172→              </div>
+   173→              <Button size="lg" onClick={() => setView("app")} className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xl shadow-emerald-500/25 h-11 mt-2"><ArrowRight className="h-4 w-4 mr-2" />Begin Your Assessment</Button>
+   174→            </CardContent></Card>
+   175→          </motion.div>
+   176→        </div></section>
+   177→
+   178→        <footer className="border-t border-white/10 mt-auto"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500"><p>HealthPredict AI — For educational and informational purposes only. Not a medical diagnosis.</p><p className="flex items-center gap-1">Scikit-Learn + FastAPI + Next.js</p></div></footer>
+   179→      </div>
+   180→      </TooltipProvider>
+   181→    );
+   182→  }
+   183→
+   184→  /* ======================= APP VIEW ======================= */
+   185→  return (
+   186→    <TooltipProvider>
+   187→    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-emerald-50/30">
+   188→      {/* HEADER */}
+   189→      <header className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50">
+   190→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+   191→          <div className="flex items-center justify-between">
+   192→            <button onClick={() => { setView("landing"); setResult(null); }} className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+   193→              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20"><Stethoscope className="h-4 w-4 text-white" /></div>
+   194→              <div className="text-left hidden sm:block"><div className="text-sm font-bold text-gray-900 leading-tight">HealthPredict AI</div><div className="text-[10px] text-muted-foreground">Intelligent Health Assessment</div></div>
+   195→            </button>
+   196→            <div className="flex items-center gap-2">
+   197→              <Badge variant="outline" className={apiStatus === "online" ? "border-emerald-300 bg-emerald-50 text-emerald-700" : "border-red-300 bg-red-50 text-red-700"}><span className={"h-1.5 w-1.5 rounded-full mr-1.5 " + (apiStatus === "online" ? "bg-emerald-500" : "bg-red-500 animate-pulse")} />{apiStatus === "online" ? "ML Online" : "Offline"}</Badge>
+   198→            </div>
+   199→          </div>
+   200→        </div>
+   201→      </header>
+   202→
+   203→      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+   204→        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+   205→
+   206→          {/* LEFT: INPUT FORM */}
+   207→          <div className="lg:col-span-5 space-y-5">
+   208→            <motion.div {...fadeIn}><Card className="border shadow-sm">
+   209→              <CardHeader className="pb-4"><CardTitle className="flex items-center gap-2 text-base"><FileText className="h-4 w-4 text-emerald-600" />Health Metrics</CardTitle><CardDescription>Enter your biometrics for chronic disease risk analysis.</CardDescription></CardHeader>
+   210→              <CardContent className="space-y-4">
+   211→                {SLIDER_FIELDS.map(f => { const v = inputs[f.key]; const [lo, hi] = f.normalRange; const ok = v >= lo && v <= hi; return (
+   212→                  <div key={f.key} className="space-y-1.5">
+   213→                    <div className="flex items-center justify-between"><Label className="text-sm font-medium flex items-center gap-1.5">{f.icon} {f.label}<Tooltip><TooltipTrigger asChild><Info className="h-3 w-3 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent side="right" className="max-w-xs">{f.tooltip}</TooltipContent></Tooltip></Label><div className="flex items-center gap-1.5"><span className={"text-sm font-semibold tabular-nums " + (ok ? "text-emerald-600" : "text-red-500")}>{v}</span><span className="text-[10px] text-muted-foreground">{f.unit}</span></div></div>
+   214→                    <Slider value={[v]} onValueChange={([x]) => updateInput(f.key, x)} min={f.min} max={f.max} step={f.step} className="w-full" />
+   215→                    <div className="flex justify-between text-[10px] text-muted-foreground"><span>{f.min}</span><span className="text-emerald-600 font-medium">Normal: {lo} \u2013 {hi}</span><span>{f.max}</span></div>
+   216→                  </div>); })}
+   217→              </CardContent>
+   218→            </Card></motion.div>
+   219→
+   220→            {/* LOCATION SELECTOR */}
+   221→            <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.08 }}><Card className="border shadow-sm">
+   222→              <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><MapPinned className="h-4 w-4 text-orange-600" />Your Location</CardTitle><CardDescription>Select your city for nearby hospital recommendations.</CardDescription></CardHeader>
+   223→              <CardContent className="space-y-3">
+   224→                <div className="grid grid-cols-2 gap-3">
+   225→                  <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">City</Label>
+   226→                    <Select value={city} onValueChange={setCity}><SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger><SelectContent>{cities.map(c => <SelectItem key={c.city + c.state} value={c.city}>{c.city}</SelectItem>)}</SelectContent></Select>
+   227→                  </div>
+   228→                  <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">State</Label>
+   229→                    <Select value={state} onValueChange={setState}><SelectTrigger><SelectValue placeholder="State" /></SelectTrigger><SelectContent>{[...new Set(cities.map(c => c.state))].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
+   230→                  </div>
+   231→                </div>
+   232→              </CardContent>
+   233→            </Card></motion.div>
+   234→
+   235→            {/* GEMINI KEY */}
+   236→            <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.12 }}><Card className="border shadow-sm">
+   237→              <CardHeader className="pb-3"><div className="flex items-center justify-between cursor-pointer" onClick={() => setShowGemini(!showGemini)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") setShowGemini(!showGemini); }}><CardTitle className="flex items-center gap-2 text-base"><Sparkles className="h-4 w-4 text-violet-600" />AI Summary <Badge variant="outline" className="text-[10px] px-1.5 py-0">Optional</Badge></CardTitle>{showGemini ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div></CardHeader>
+   238→              <AnimatePresence>{showGemini && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden"><CardContent className="pt-0"><Label className="text-sm text-muted-foreground">Google Gemini API key for AI medical summary.</Label><Input type="password" placeholder="AIza..." value={geminiKey} onChange={e => setGeminiKey(e.target.value)} className="mt-2" /></CardContent></motion.div>}</AnimatePresence>
+   239→            </Card></motion.div>
+   240→
+   241→            {/* BUTTONS */}
+   242→            <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.15 }} className="flex gap-3">
+   243→              <Button onClick={handleAnalyze} disabled={loading || apiStatus !== "online" || !city} className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg shadow-emerald-600/20 h-11 text-sm font-semibold">{loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Analyzing...</> : <><Search className="h-4 w-4 mr-2" />Run Prediction</>}</Button>
+   244→              <Button variant="outline" onClick={handleReset} disabled={loading} className="h-11">Reset</Button>
+   245→            </motion.div>
+   246→
+   247→            <div className="rounded-lg border border-dashed bg-muted/30 p-3"><div className="flex items-start gap-2 text-xs text-muted-foreground"><Shield className="h-3.5 w-3.5 mt-0.5 text-emerald-500 shrink-0" /><p>Uses a <strong>500-patient synthetic dataset</strong> (Pima Indians / Kaggle). <strong>Not a diagnosis.</strong></p></div></div>
+   248→          </div>
+   249→
+   250→          {/* RIGHT: RESULTS */}
+   251→          <div ref={resultsRef} className="lg:col-span-7 space-y-5">
+   252→            {loading && <div className="space-y-5">{[1,2,3].map(i => <Card key={i}><CardContent className="py-6 space-y-3"><Skeleton className="h-5 w-48" /><Skeleton className="h-32 w-full rounded-lg" /><Skeleton className="h-4 w-3/4" /></CardContent></Card>)}</div>}
+   253→            {error && <motion.div {...fadeIn}><Card className="border-red-200 bg-red-50"><CardContent className="py-4 flex items-center gap-3"><AlertTriangle className="h-5 w-5 text-red-500 shrink-0" /><div><p className="text-sm font-medium text-red-800">Prediction Failed</p><p className="text-xs text-red-600 mt-0.5">{error}</p></div></CardContent></Card></motion.div>}
+   254→            {!loading && !error && !result && <motion.div {...fadeIn}><Card className="border-dashed"><CardContent className="py-16 flex flex-col items-center text-center"><div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4"><Search className="h-7 w-7 text-emerald-400" /></div><p className="text-sm font-medium text-muted-foreground">No Results Yet</p><p className="text-xs text-muted-foreground mt-1 max-w-xs">Enter health metrics, select your city, and click Run Prediction.</p></CardContent></Card></motion.div>}
+   255→
+   256→            <AnimatePresence>{result && !loading && <motion.div key="r" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+   257→
+   258→              {/* RISK TIER */}
+   259→              <Card className={rc?.bg + " border-2"}><CardHeader className="pb-3"><div className="flex items-center justify-between"><CardTitle className="flex items-center gap-2 text-base"><TrendingUp className="h-4 w-4" />Risk Assessment</CardTitle><Badge className={rc?.badge + " border text-xs font-semibold px-3 py-1"}>{rc?.label}</Badge></div></CardHeader><CardContent className="space-y-4">
+   260→                <div className="flex items-center gap-4">{rc?.icon}<div className="flex-1"><p className={"text-sm font-medium " + rc?.color}>{rc?.desc}</p><p className="text-xs text-muted-foreground mt-0.5">Confidence: <span className="font-semibold text-foreground">{(result.risk.risk_score * 100).toFixed(1)}%</span> | Location: <span className="font-medium">{result.user_profile.location}</span></p></div></div>
+   261→                <div className="space-y-2"><p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Risk Probability</p>
+   262→                  {(["low", "moderate", "high"] as const).map(t => { const p = result.risk.risk_probability[t] * 100; return (<div key={t} className="space-y-1"><div className="flex justify-between text-xs"><span className="font-medium">{RISK_CFG[t].label}</span><span className="tabular-nums font-semibold">{p.toFixed(1)}%</span></div><div className="h-2.5 bg-black/5 rounded-full overflow-hidden"><motion.div initial={{ width: 0 }} animate={{ width: p + "%" }} transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }} className={"h-full rounded-full " + RISK_CFG[t].bar} /></div></div>); })}
+   263→                </div>
+   264→                <Separator />
+   265→                <div><p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Top Risk Factors</p><div className="space-y-1.5">{Object.entries(result.risk.feature_importance).slice(0, 5).map(([f, imp], i) => (<div key={f} className="flex items-center gap-2"><span className="text-xs text-muted-foreground w-5 text-right">{i + 1}.</span><div className="flex-1 h-1.5 bg-black/5 rounded-full overflow-hidden"><motion.div initial={{ width: 0 }} animate={{ width: Math.min(imp * 300, 100) + "%" }} transition={{ duration: 0.6, delay: 0.3 + i * 0.05 }} className="h-full bg-gray-400 rounded-full" /></div><span className="text-xs font-medium w-36 truncate">{f.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</span><span className="text-[10px] text-muted-foreground tabular-nums w-10 text-right">{(imp * 100).toFixed(1)}%</span></div>))}</div></div>
+   266→              </CardContent></Card>
+   267→
+   268→              {/* COMPARATIVE GRID: User vs Matches */}
+   269→              <Card className="border shadow-sm"><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><ShieldCheck className="h-4 w-4 text-blue-600" />Comparative Patient Analysis</CardTitle><CardDescription>Your health profile vs. the 2 most similar historical cases from our 500-patient database.</CardDescription></CardHeader><CardContent className="space-y-4">
+   270→                {/* User Profile Card */}
+   271→                <div className="rounded-xl bg-gradient-to-r from-slate-50 to-emerald-50/30 border p-4"><p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1"><User className="h-3 w-3" />Your Profile</p><div className="grid grid-cols-3 sm:grid-cols-4 gap-3 text-sm"><div><span className="text-[10px] text-muted-foreground block">Age</span><span className="font-semibold">{result.user_profile.age}</span></div><div><span className="text-[10px] text-muted-foreground block">BMI</span><span className="font-semibold">{result.user_profile.bmi}</span></div><div><span className="text-[10px] text-muted-foreground block">BP</span><span className="font-semibold">{result.user_profile.blood_pressure}</span></div><div><span className="text-[10px] text-muted-foreground block">Glucose</span><span className="font-semibold">{result.user_profile.glucose}</span></div><div><span className="text-[10px] text-muted-foreground block">Cholesterol</span><span className="font-semibold">{result.user_profile.cholesterol}</span></div><div><span className="text-[10px] text-muted-foreground block">Heart Rate</span><span className="font-semibold">{result.user_profile.heart_rate}</span></div><div><span className="text-[10px] text-muted-foreground block">Insulin</span><span className="font-semibold">{result.user_profile.insulin}</span></div><div><span className="text-[10px] text-muted-foreground block">Location</span><span className="font-semibold text-xs">{result.user_profile.location}</span></div></div></div>
+   272→
+   273→                {/* Match Cards */}
+   274→                {result.historical_matches.map((m, idx) => (
+   275→                  <motion.div key={m.patient_id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.1 + idx * 0.1 }}>
+   276→                    <Card className={"border " + (m.risk_level === "high" ? "border-red-200 bg-red-50/30" : m.risk_level === "moderate" ? "border-amber-200 bg-amber-50/30" : "border-emerald-200 bg-emerald-50/30")}><CardContent className="py-3 px-4">
+   277→                      <div className="flex items-start justify-between mb-2"><div className="flex items-center gap-2"><Badge variant="outline" className="text-[10px] font-mono">{m.patient_id}</Badge><Badge className={RISK_CFG[m.risk_level]?.badge + " border text-[10px]"}>{RISK_CFG[m.risk_level]?.label}</Badge></div><div className="text-right"><span className="text-[10px] text-muted-foreground block">Similarity</span><span className="text-base font-bold tabular-nums">{(m.similarity_score * 100).toFixed(1)}%</span></div></div>
+   278→                      <div className="flex flex-wrap gap-1 mb-2">{m.overlapping_traits.map(t => <Badge key={t.trait} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">{t.trait}: {t.user_value} vs {t.patient_value}</Badge>)}</div>
+   279→                      <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Diagnosis:</span> {m.diagnosis}</p>
+   280→                      <button className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium mt-1" onClick={() => setExpandedMatch(expandedMatch === idx ? null : idx)}>{expandedMatch === idx ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}{expandedMatch === idx ? "Hide" : "Show"} Full Profile & Progression</button>
+   281→                      <AnimatePresence>{expandedMatch === idx && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden"><div className="mt-2 pt-2 border-t space-y-2"><div className="grid grid-cols-3 gap-2 text-xs"><div><span className="text-muted-foreground">Age:</span> <span className="font-medium">{m.profile.age}</span></div><div><span className="text-muted-foreground">BMI:</span> <span className="font-medium">{m.profile.bmi}</span></div><div><span className="text-muted-foreground">BP:</span> <span className="font-medium">{m.profile.blood_pressure}</span></div><div><span className="text-muted-foreground">Glucose:</span> <span className="font-medium">{m.profile.glucose}</span></div><div><span className="text-muted-foreground">Chol:</span> <span className="font-medium">{m.profile.cholesterol}</span></div><div><span className="text-muted-foreground">HR:</span> <span className="font-medium">{m.profile.heart_rate}</span></div></div><div className="bg-white/60 rounded-lg p-2.5 border"><p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Clinical Progression</p><p className="text-xs leading-relaxed">{m.historical_progression}</p></div></div></motion.div>}</AnimatePresence>
+   282→                    </CardContent></Card>
+   283→                  </motion.div>
+   284→                ))}
+   285→              </CardContent></Card>
+   286→
+   287→              {/* CARE GUIDANCE (Conditional) */}
+   288→              {result.care_guidance.emergency_escalation && <motion.div {...fadeIn} transition={{ delay: 0.2 }}><Card className="border-2 border-red-300 bg-red-50"><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base text-red-800"><AlertOctagon className="h-4 w-4" />Immediate Medical Attention Required</CardTitle></CardHeader><CardContent className="space-y-3"><p className="text-sm text-red-700 font-medium">{result.care_guidance.message}</p><div className="space-y-2">{result.care_guidance.actions?.map((a, i) => <div key={i} className="flex items-start gap-2 text-sm"><Cross className="h-4 w-4 text-red-500 shrink-0 mt-0.5" /><span>{a}</span></div>)}</div><p className="text-xs text-red-500 font-medium mt-2">OTC medications and self-treatment are NOT recommended for high-risk results. Please seek immediate professional medical care.</p></CardContent></Card></motion.div>}
+   289→
+   290→              {result.care_guidance.show_medications && result.care_guidance.care_guides && <motion.div {...fadeIn} transition={{ delay: 0.2 }}><Card className="border-2 border-amber-200 bg-amber-50/50"><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><ClipboardList className="h-4 w-4 text-amber-600" />Temporary Precautions & OTC Guidance</CardTitle><CardDescription>For moderate risk — consult a doctor for sustained care.</CardDescription></CardHeader><CardContent className="space-y-3">
+   291→                <p className="text-sm text-amber-800">{result.care_guidance.message}</p>
+   292→                {result.care_guidance.care_guides.map((g, gi) => (
+   293→                  <div key={gi} className="rounded-lg border bg-white/60 p-4 space-y-3">
+   294→                    <button className="flex items-center justify-between w-full text-left" onClick={() => setExpandedGuide(expandedGuide === gi ? null : gi)}><div className="flex items-center gap-2"><Pill className="h-4 w-4 text-amber-600" /><h4 className="text-sm font-semibold">{g.title}</h4></div>{expandedGuide === gi ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</button>
+   295→                    <AnimatePresence>{expandedGuide === gi && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3">
+   296→                      <div><p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-1.5">Precautions</p>{g.precautions.map((p, i) => <div key={i} className="flex items-start gap-2 text-xs text-gray-700"><CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0 mt-0.5" /><span>{p}</span></div>)}</div>
+   297→                      <div><p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1.5">OTC Supplements</p>{g.otc_guidance.map((o, i) => <div key={i} className="flex items-start gap-2 text-xs text-gray-700"><Syringe className="h-3 w-3 text-blue-500 shrink-0 mt-0.5" /><span>{o}</span></div>)}</div>
+   298→                      <div><p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-1.5">Avoid</p>{g.avoid.map((a, i) => <div key={i} className="flex items-start gap-2 text-xs text-gray-700"><AlertTriangle className="h-3 w-3 text-red-500 shrink-0 mt-0.5" /><span>{a}</span></div>)}</div>
+   299→                    </motion.div>}</AnimatePresence>
+   300→                  </div>
+   301→                ))}
+   302→                {result.care_guidance.disclaimer && <p className="text-xs text-amber-600 italic border-t pt-2">{result.care_guidance.disclaimer}</p>}
+   303→              </CardContent></Card></motion.div>}
+   304→
+   305→              {!result.care_guidance.show_medications && !result.care_guidance.emergency_escalation && <motion.div {...fadeIn} transition={{ delay: 0.2 }}><Card className="border-emerald-200 bg-emerald-50/50"><CardContent className="py-4"><div className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" /><div><p className="text-sm font-medium text-emerald-800">{result.care_guidance.message}</p>{result.care_guidance.actions?.map((a, i) => <p key={i} className="text-xs text-emerald-700 mt-1">{a}</p>)}</div></div></CardContent></Card></motion.div>}
+   306→
+   307→              {/* HOSPITALS */}
+   308→              <Card className="border shadow-sm"><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><Building2 className="h-4 w-4 text-orange-600" />Recommended Hospitals in {result.user_profile.location}</CardTitle><CardDescription>Sorted by specialty match, quality, and proximity.</CardDescription></CardHeader><CardContent className="space-y-3">
+   309→                {result.recommended_hospitals.slice(0, 4).map((h, i) => (
+   310→                  <motion.div key={h.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 + i * 0.06 }}><Card className="border hover:shadow-md transition-shadow"><CardContent className="py-3 px-4">
+   311→                    <div className="flex items-start justify-between gap-3"><div className="flex-1 min-w-0">
+   312→                      <div className="flex items-center gap-2 mb-1">{i === 0 && <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px]">Best Match</Badge>}<h4 className="text-sm font-semibold truncate">{h.name}</h4></div>
+   313→                      <div className="flex flex-wrap gap-1 mb-1.5">{h.matched_specialties.map(s => <Badge key={s} variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border-emerald-200">{s}</Badge>)}</div>
+   314→                      {h.doctors.length > 0 && <p className="text-xs text-muted-foreground mb-1.5">{h.doctors.join(" | ")}</p>}
+   315→                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground"><span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{h.city}</span><span className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-500" />{h.rating}/5</span><span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{h.beds} beds</span>{h.emergency && <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-red-600 border-red-200">24/7 ER</Badge>}</div></div><div className="text-right shrink-0"><div className="text-lg font-bold tabular-nums text-emerald-600">{(h.match_score * 100).toFixed(0)}%</div><div className="text-[10px] text-muted-foreground">match</div></div></div>
+   316→                    <div className="mt-2 pt-2 border-t flex items-center justify-between text-xs text-muted-foreground"><span className="flex items-center gap-1 truncate max-w-[60%]"><MapPin className="h-3 w-3 shrink-0" />{h.address}</span><span className="flex items-center gap-1 shrink-0"><Phone className="h-3 w-3" />{h.phone}</span></div>
+   317→                  </CardContent></Card></motion.div>
+   318→                ))}
+   319→              </CardContent></Card>
+   320→
+   321→              {/* GEMINI SUMMARY */}
+   322→              {result.ai_summary && <motion.div {...fadeIn} transition={{ delay: 0.3 }}><Card className="border-2 border-violet-200 bg-violet-50/40"><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><Sparkles className="h-4 w-4 text-violet-600" />AI Health Summary</CardTitle><CardDescription>Generated by Google Gemini.</CardDescription></CardHeader><CardContent><div className="prose prose-sm max-w-none text-gray-700 bg-white/70 rounded-lg p-4 border whitespace-pre-wrap text-xs leading-relaxed">{result.ai_summary}</div></CardContent></Card></motion.div>}
+   323→
+   324→            </motion.div>}</AnimatePresence>
+   325→          </div>
+   326→        </div>
+   327→      </main>
+   328→
+   329→      <footer className="border-t bg-white/60 mt-auto"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground"><p>HealthPredict AI — Not a medical diagnosis.</p><p>Scikit-Learn + FastAPI + Next.js</p></div></footer>
+   330→    </div>
+   331→    </TooltipProvider>
+   332→  );
+   333→}
+   334→

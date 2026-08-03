@@ -1,0 +1,738 @@
+     1→"""
+     2→AI Health Risk Predictor - FastAPI Backend
+     3→=============================================
+     4→A production-grade ML backend that:
+     5→  1. Initializes a synthetic patient dataset (inspired by Pima Indians / Synthea benchmarks)
+     6→  2. Trains a Gradient Boosting classification model for chronic disease risk
+     7→  3. Provides KNN-based historical similarity matching
+     8→  4. Recommends hospitals by specialty & proximity
+     9→  5. Integrates Google Gemini for professional medical summaries
+    10→
+    11→Data Source:  The backend auto-generates a 500-patient synthetic dataset on startup
+    12→             modeled after the Pima Indians Diabetes Dataset structure (Kaggle),
+    13→             extended with additional clinical features for cardiovascular risk.
+    14→             No external download required - data is created using numpy's random
+    15→             seed to ensure reproducibility and realistic clinical distributions.
+    16→"""
+    17→
+    18→from fastapi import FastAPI, HTTPException
+    19→from fastapi.middleware.cors import CORSMiddleware
+    20→from pydantic import BaseModel, Field
+    21→from typing import Optional
+    22→import numpy as np
+    23→import pandas as pd
+    24→from sklearn.ensemble import GradientBoostingClassifier
+    25→from sklearn.neighbors import NearestNeighbors
+    26→from sklearn.preprocessing import StandardScaler
+    27→import os
+    28→import json
+    29→import logging
+    30→
+    31→# ---------------------------------------------------------------------------
+    32→# Logging
+    33→# ---------------------------------------------------------------------------
+    34→logging.basicConfig(level=logging.INFO)
+    35→logger = logging.getLogger("health-api")
+    36→
+    37→# ---------------------------------------------------------------------------
+    38→# App initialization
+    39→# ---------------------------------------------------------------------------
+    40→app = FastAPI(
+    41→    title="AI Health Risk Predictor API",
+    42→    description="Production-grade health risk prediction with historical matching",
+    43→    version="1.0.0",
+    44→)
+    45→
+    46→app.add_middleware(
+    47→    CORSMiddleware,
+    48→    allow_origins=["*"],
+    49→    allow_credentials=True,
+    50→    allow_methods=["*"],
+    51→    allow_headers=["*"],
+    52→)
+    53→
+    54→# ---------------------------------------------------------------------------
+    55→# Global model state
+    56→# ---------------------------------------------------------------------------
+    57→model: Optional[GradientBoostingClassifier] = None
+    58→scaler: Optional[StandardScaler] = None
+    59→nn_model: Optional[NearestNeighbors] = None
+    60→df_patients: Optional[pd.DataFrame] = None
+    61→df_hospitals: Optional[pd.DataFrame] = None
+    62→FEATURE_COLS = [
+    63→    "age", "bmi", "blood_pressure_systolic", "blood_pressure_diastolic",
+    64→    "glucose", "cholesterol", "heart_rate", "insulin",
+    65→]
+    66→
+    67→
+    68→# ========================================================================
+    69→# 1. SYNTHETIC DATA GENERATION
+    70→# ========================================================================
+    71→def generate_synthetic_dataset(n_patients: int = 500, seed: int = 42) -> pd.DataFrame:
+    72→    """
+    73→    Generate a realistic synthetic patient dataset.
+    74→
+    75→    The dataset is modeled after the Pima Indians Diabetes Dataset (a standard
+    76→    Kaggle benchmark for diabetes prediction), extended with cardiovascular
+    77→    risk factors. Features follow clinically realistic distributions:
+    78→
+    79→    - Age: 18-80, normal distribution centered at 45
+    80→    - BMI: 18-45, skewed right (obesity prevalence)
+    81→    - Blood Pressure: Systolic 90-200, Diastolic 60-130
+    82→    - Glucose (fasting): 70-220 mg/dL
+    83→    - Cholesterol (total): 120-350 mg/dL
+    84→    - Heart Rate: 55-110 bpm
+    85→    - Insulin: 2-400 mu U/mL (log-normal distribution)
+    86→
+    87→    The outcome label (risk_level) is derived from clinical thresholds
+    88→    combined with probabilistic noise to simulate real-world diagnostic
+    89→    complexity.
+    90→
+    91→    Returns:
+    92→        pd.DataFrame with n_patients rows and clinical feature columns.
+    93→    """
+    94→    rng = np.random.RandomState(seed)
+    95→
+    96→    # Generate features with realistic clinical distributions
+    97→    ages = rng.normal(48, 14, n_patients).clip(18, 80).astype(int)
+    98→    bmis = rng.normal(28.5, 6.5, n_patients).clip(16, 50).round(1)
+    99→    bp_sys = rng.normal(130, 22, n_patients).clip(90, 200).astype(int)
+   100→    bp_dia = rng.normal(85, 14, n_patients).clip(55, 130).astype(int)
+   101→    glucose = rng.normal(115, 35, n_patients).clip(60, 250).astype(int)
+   102→    cholesterol = rng.normal(210, 45, n_patients).clip(100, 400).astype(int)
+   103→    heart_rate = rng.normal(75, 12, n_patients).clip(50, 120).astype(int)
+   104→    # Insulin follows a log-normal distribution (many low values, few very high)
+   105→    insulin = rng.lognormal(3.5, 0.8, n_patients).clip(2, 500).round(1)
+   106→
+   107→    # --- Derive risk labels using clinical thresholds + noise ---
+   108→    # Start with a base risk score from 0 to 1
+   109→    risk_score = np.zeros(n_patients)
+   110→
+   111→    # Age factor: >50 adds risk
+   112→    risk_score += np.where(ages > 50, 0.15, 0.0)
+   113→    risk_score += np.where(ages > 65, 0.15, 0.0)
+   114→
+   115→    # BMI factor: >25 overweight, >30 obese
+   116→    risk_score += np.where(bmis > 25, 0.1, 0.0)
+   117→    risk_score += np.where(bmis > 30, 0.15, 0.0)
+   118→
+   119→    # Blood pressure: Stage 1 hypertension >130/85, Stage 2 >140/90
+   120→    risk_score += np.where(bp_sys > 130, 0.1, 0.0)
+   121→    risk_score += np.where(bp_sys > 140, 0.15, 0.0)
+   122→    risk_score += np.where(bp_dia > 90, 0.1, 0.0)
+   123→
+   124→    # Glucose: prediabetes >100, diabetes >126
+   125→    risk_score += np.where(glucose > 100, 0.15, 0.0)
+   126→    risk_score += np.where(glucose > 126, 0.2, 0.0)
+   127→
+   128→    # Cholesterol: borderline >200, high >240
+   129→    risk_score += np.where(cholesterol > 200, 0.1, 0.0)
+   130→    risk_score += np.where(cholesterol > 240, 0.15, 0.0)
+   131→
+   132→    # Add stochastic noise (real diagnostics are not deterministic)
+   133→    risk_score += rng.normal(0, 0.12, n_patients)
+   134→    risk_score = risk_score.clip(0, 1)
+   135→
+   136→    # Map to risk tiers
+   137→    def score_to_label(s):
+   138→        if s < 0.33:
+   139→            return "low"
+   140→        elif s < 0.60:
+   141→            return "moderate"
+   142→        else:
+   143→            return "high"
+   144→
+   145→    risk_labels = [score_to_label(s) for s in risk_score]
+   146→
+   147→    # Generate diagnosis descriptions based on risk
+   148→    def generate_diagnosis(risk, age, bmi, glucose, chol, sys_bp, dia_bp):
+   149→        conditions = []
+   150→        if risk == "high":
+   151→            if glucose > 126:
+   152→                conditions.append("Type 2 Diabetes")
+   153→            if chol > 240 or sys_bp > 140:
+   154→                conditions.append("Cardiovascular Disease")
+   155→            if sys_bp > 140 and dia_bp > 90:
+   156→                conditions.append("Hypertension Stage 2")
+   157→            if not conditions:
+   158→                conditions.append("Metabolic Syndrome")
+   159→        elif risk == "moderate":
+   160→            if glucose > 100:
+   161→                conditions.append("Prediabetes")
+   162→            if sys_bp > 130:
+   163→                conditions.append("Elevated Blood Pressure")
+   164→            if bmi > 30:
+   165→                conditions.append("Obesity")
+   166→            if not conditions:
+   167→                conditions.append("Metabolic Risk Factors")
+   168→        else:
+   169→            conditions.append("Generally Healthy")
+   170→        return ", ".join(conditions)
+   171→
+   172→    diagnoses = [
+   173→        generate_diagnosis(risk_labels[i], ages[i], bmis[i], glucose[i], cholesterol[i], bp_sys[i], bp_dia[i])
+   174→        for i in range(n_patients)
+   175→    ]
+   176→
+   177→    # Build historical progression notes
+   178→    def generate_progression(risk):
+   179→        if risk == "high":
+   180→            return (
+   181→                "Initial screening showed elevated markers. "
+   182→                "Follow-up at 6 months confirmed progressive risk. "
+   183→                "Treatment plan initiated with lifestyle modifications and medication."
+   184→            )
+   185→        elif risk == "moderate":
+   186→            return (
+   187→                "Routine checkup revealed borderline indicators. "
+   188→                "Referred for monitoring. "
+   189→                "3-month follow-up showed stable condition with recommended dietary changes."
+   190→            )
+   191→        else:
+   192→            return (
+   193→                "Standard health screening within normal ranges. "
+   194→                "Annual checkup recommended. "
+   195→                "No immediate medical intervention required."
+   196→            )
+   197→
+   198→    progressions = [generate_progression(r) for r in risk_labels]
+   199→
+   200→    df = pd.DataFrame({
+   201→        "patient_id": [f"P-{1000 + i}" for i in range(n_patients)],
+   202→        "age": ages,
+   203→        "bmi": bmis,
+   204→        "blood_pressure_systolic": bp_sys,
+   205→        "blood_pressure_diastolic": bp_dia,
+   206→        "glucose": glucose,
+   207→        "cholesterol": cholesterol,
+   208→        "heart_rate": heart_rate,
+   209→        "insulin": insulin,
+   210→        "risk_level": risk_labels,
+   211→        "risk_score": risk_score.round(3),
+   212→        "diagnosis": diagnoses,
+   213→        "progression_notes": progressions,
+   214→    })
+   215→
+   216→    return df
+   217→
+   218→
+   219→# ========================================================================
+   220→# 2. MOCK HOSPITAL DATABASE
+   221→# ========================================================================
+   222→def generate_hospital_database() -> pd.DataFrame:
+   223→    """
+   224→    Create a realistic mock hospital database with specializations,
+   225→    quality ratings, and proximity tiers for recommendation sorting.
+   226→    """
+   227→    hospitals = [
+   228→        {
+   229→            "id": "H-001",
+   230→            "name": "Metro General Hospital",
+   231→            "specialties": ["Cardiology", "Endocrinology", "Internal Medicine"],
+   232→            "rating": 4.8,
+   233→            "distance_km": 2.3,
+   234→            "address": "1200 Health Boulevard, Downtown",
+   235→            "phone": "+1 (555) 100-2001",
+   236→            "beds": 450,
+   237→            "emergency": True,
+   238→        },
+   239→        {
+   240→            "id": "H-002",
+   241→            "name": "University Medical Center",
+   242→            "specialties": ["Cardiology", "Endocrinology", "Nephrology", "Neurology"],
+   243→            "rating": 4.9,
+   244→            "distance_km": 5.7,
+   245→            "address": "500 Research Drive, University District",
+   246→            "phone": "+1 (555) 100-2002",
+   247→            "beds": 820,
+   248→            "emergency": True,
+   249→        },
+   250→        {
+   251→            "id": "H-003",
+   252→            "name": "St. Claire Community Hospital",
+   253→            "specialties": ["Internal Medicine", "Family Practice", "Pediatrics"],
+   254→            "rating": 4.3,
+   255→            "distance_km": 1.8,
+   256→            "address": "80 Elm Street, Westside",
+   257→            "phone": "+1 (555) 100-2003",
+   258→            "beds": 180,
+   259→            "emergency": True,
+   260→        },
+   261→        {
+   262→            "id": "H-004",
+   263→            "name": "Heart & Vascular Institute",
+   264→            "specialties": ["Cardiology", "Cardiac Surgery", "Vascular Surgery"],
+   265→            "rating": 4.7,
+   266→            "distance_km": 8.1,
+   267→            "address": "300 Cardio Way, Medical Park",
+   268→            "phone": "+1 (555) 100-2004",
+   269→            "beds": 250,
+   270→            "emergency": True,
+   271→        },
+   272→        {
+   273→            "id": "H-005",
+   274→            "name": "Riverside Diabetes & Endocrine Center",
+   275→            "specialties": ["Endocrinology", "Diabetes Education", "Nutrition"],
+   276→            "rating": 4.6,
+   277→            "distance_km": 4.2,
+   278→            "address": "75 Wellness Avenue, Riverside",
+   279→            "phone": "+1 (555) 100-2005",
+   280→            "beds": 120,
+   281→            "emergency": False,
+   282→        },
+   283→        {
+   284→            "id": "H-006",
+   285→            "name": "Pacific Regional Medical Center",
+   286→            "specialties": ["Cardiology", "Endocrinology", "Oncology", "Orthopedics"],
+   287→            "rating": 4.5,
+   288→            "distance_km": 12.4,
+   289→            "address": "2000 Pacific Highway, Eastside",
+   290→            "phone": "+1 (555) 100-2006",
+   291→            "beds": 600,
+   292→            "emergency": True,
+   293→        },
+   294→        {
+   295→            "id": "H-007",
+   296→            "name": "Greenfield Family Clinic",
+   297→            "specialties": ["Family Practice", "Internal Medicine", "Preventive Care"],
+   298→            "rating": 4.4,
+   299→            "distance_km": 0.9,
+   300→            "address": "15 Main Street, Greenfield",
+   301→            "phone": "+1 (555) 100-2007",
+   302→            "beds": 50,
+   303→            "emergency": False,
+   304→        },
+   305→        {
+   306→            "id": "H-008",
+   307→            "name": "National Cardiovascular Research Hospital",
+   308→            "specialties": ["Cardiology", "Cardiac Surgery", "Cardiac Rehabilitation"],
+   309→            "rating": 4.9,
+   310→            "distance_km": 15.0,
+   311→            "address": "1 Research Park, National Medical District",
+   312→            "phone": "+1 (555) 100-2008",
+   313→            "beds": 350,
+   314→            "emergency": True,
+   315→        },
+   316→    ]
+   317→    return pd.DataFrame(hospitals)
+   318→
+   319→
+   320→# ========================================================================
+   321→# 3. MODEL TRAINING
+   322→# ========================================================================
+   323→def train_model(df: pd.DataFrame):
+   324→    """
+   325→    Train a Gradient Boosting Classifier for chronic disease risk prediction.
+   326→    Also fits a StandardScaler and NearestNeighbors model for similarity matching.
+   327→    """
+   328→    global model, scaler, nn_model, df_patients
+   329→
+   330→    df_patients = df
+   331→
+   332→    X = df[FEATURE_COLS].values
+   333→    # Encode risk labels to numeric
+   334→    label_map = {"low": 0, "moderate": 1, "high": 2}
+   335→    y = df["risk_level"].map(label_map).values
+   336→
+   337→    # Fit scaler
+   338→    scaler = StandardScaler()
+   339→    X_scaled = scaler.fit_transform(X)
+   340→
+   341→    # Train Gradient Boosting Classifier
+   342→    model = GradientBoostingClassifier(
+   343→        n_estimators=150,
+   344→        max_depth=5,
+   345→        learning_rate=0.1,
+   346→        min_samples_split=10,
+   347→        min_samples_leaf=5,
+   348→        subsample=0.8,
+   349→        random_state=42,
+   350→    )
+   351→    model.fit(X_scaled, y)
+   352→    train_acc = model.score(X_scaled, y)
+   353→    logger.info(f"Model trained. Training accuracy: {train_acc:.4f}")
+   354→
+   355→    # Fit Nearest Neighbors for historical matching
+   356→    nn_model = NearestNeighbors(n_neighbors=3, metric="cosine", algorithm="brute")
+   357→    nn_model.fit(X_scaled)
+   358→    logger.info("KNN similarity model fitted.")
+   359→
+   360→
+   361→# ========================================================================
+   362→# Pydantic models for request/response
+   363→# ========================================================================
+   364→class HealthInput(BaseModel):
+   365→    age: int = Field(..., ge=1, le=120, description="Patient age in years")
+   366→    bmi: float = Field(..., ge=10, le=60, description="Body Mass Index")
+   367→    blood_pressure_systolic: int = Field(..., ge=70, le=250, description="Systolic BP (mmHg)")
+   368→    blood_pressure_diastolic: int = Field(..., ge=40, le=150, description="Diastolic BP (mmHg)")
+   369→    glucose: int = Field(..., ge=40, le=400, description="Fasting glucose (mg/dL)")
+   370→    cholesterol: int = Field(..., ge=80, le=500, description="Total cholesterol (mg/dL)")
+   371→    heart_rate: int = Field(..., ge=30, le=200, description="Resting heart rate (bpm)")
+   372→    insulin: float = Field(..., ge=0, le=1000, description="Insulin level (mu U/mL)")
+   373→    gemini_api_key: Optional[str] = Field(None, description="Optional Gemini API key for AI summary")
+   374→
+   375→
+   376→class RiskResponse(BaseModel):
+   377→    risk_tier: str
+   378→    risk_score: float
+   379→    risk_probability: dict
+   380→    feature_importance: dict
+   381→
+   382→
+   383→class MatchResponse(BaseModel):
+   384→    matches: list
+   385→
+   386→
+   387→class HospitalResponse(BaseModel):
+   388→    hospitals: list
+   389→
+   390→
+   391→class FullPredictionResponse(BaseModel):
+   392→    risk: RiskResponse
+   393→    historical_matches: list
+   394→    recommended_hospitals: list
+   395→    ai_summary: Optional[str] = None
+   396→
+   397→
+   398→# ========================================================================
+   399→# API ENDPOINTS
+   400→# ========================================================================
+   401→@app.on_event("startup")
+   402→async def startup_event():
+   403→    """
+   404→    On startup: generate synthetic dataset, train ML model, load hospital data.
+   405→    This replaces the need for an external dataset download -- the data is
+   406→    created in-memory using clinically realistic distributions.
+   407→    """
+   408→    logger.info("Generating synthetic patient dataset (500 records)...")
+   409→    df = generate_synthetic_dataset(n_patients=500, seed=42)
+   410→    logger.info(f"Dataset generated: {len(df)} patients")
+   411→    logger.info(f"Risk distribution: {df['risk_level'].value_counts().to_dict()}")
+   412→
+   413→    train_model(df)
+   414→
+   415→    global df_hospitals
+   416→    df_hospitals = generate_hospital_database()
+   417→    logger.info(f"Hospital database loaded: {len(df_hospitals)} facilities")
+   418→    logger.info("Health Risk Predictor API is ready.")
+   419→
+   420→
+   421→@app.get("/api/status")
+   422→async def status():
+   423→    """Health check endpoint."""
+   424→    return {
+   425→        "status": "healthy",
+   426→        "model_loaded": model is not None,
+   427→        "patients_in_db": len(df_patients) if df_patients is not None else 0,
+   428→        "hospitals_available": len(df_hospitals) if df_hospitals is not None else 0,
+   429→    }
+   430→
+   431→
+   432→@app.get("/api/data/stats")
+   433→async def data_stats():
+   434→    """Return dataset statistics for transparency."""
+   435→    if df_patients is None:
+   436→        raise HTTPException(status_code=503, detail="Model not initialized")
+   437→    return {
+   438→        "total_patients": len(df_patients),
+   439→        "risk_distribution": df_patients["risk_level"].value_counts().to_dict(),
+   440→        "feature_stats": df_patients[FEATURE_COLS].describe().to_dict(),
+   441→        "data_source": "Synthetic dataset generated on startup, modeled after Pima Indians Diabetes Dataset (Kaggle benchmark) extended with cardiovascular risk factors.",
+   442→    }
+   443→
+   444→
+   445→@app.post("/api/predict", response_model=RiskResponse)
+   446→async def predict_risk(input_data: HealthInput):
+   447→    """
+   448→    Predict chronic disease risk tier and probability from health inputs.
+   449→    Uses the trained Gradient Boosting Classifier.
+   450→    """
+   451→    if model is None or scaler is None:
+   452→        raise HTTPException(status_code=503, detail="Model not initialized")
+   453→
+   454→    # Build feature vector
+   455→    user_vector = np.array([[
+   456→        input_data.age, input_data.bmi,
+   457→        input_data.blood_pressure_systolic, input_data.blood_pressure_diastolic,
+   458→        input_data.glucose, input_data.cholesterol,
+   459→        input_data.heart_rate, input_data.insulin,
+   460→    ]])
+   461→
+   462→    # Scale and predict
+   463→    user_scaled = scaler.transform(user_vector)
+   464→    prediction = model.predict(user_scaled)[0]
+   465→    probabilities = model.predict_proba(user_scaled)[0]
+   466→
+   467→    label_map = {"low": 0, "moderate": 1, "high": 2}
+   468→    inv_label_map = {v: k for k, v in label_map.items()}
+   469→    predicted_tier = inv_label_map[prediction]
+   470→    predicted_score = float(probabilities[prediction])
+   471→
+   472→    # Feature importance
+   473→    importance = dict(zip(FEATURE_COLS, model.feature_importances_.round(4)))
+   474→    # Sort by importance descending
+   475→    importance = dict(sorted(importance.items(), key=lambda x: x[1], reverse=True))
+   476→
+   477→    return RiskResponse(
+   478→        risk_tier=predicted_tier,
+   479→        risk_score=round(predicted_score, 4),
+   480→        risk_probability={
+   481→            "low": round(float(probabilities[0]), 4),
+   482→            "moderate": round(float(probabilities[1]), 4),
+   483→            "high": round(float(probabilities[2]), 4),
+   484→        },
+   485→        feature_importance=importance,
+   486→    )
+   487→
+   488→
+   489→@app.post("/api/match", response_model=MatchResponse)
+   490→async def find_similar_patients(input_data: HealthInput):
+   491→    """
+   492→    Find the top 2 most similar historical patients using KNN cosine similarity.
+   493→    Returns their profiles, similarity scores, and clinical progression notes.
+   494→    """
+   495→    if nn_model is None or scaler is None or df_patients is None:
+   496→        raise HTTPException(status_code=503, detail="Model not initialized")
+   497→
+   498→    user_vector = np.array([[
+   499→        input_data.age, input_data.bmi,
+   500→        input_data.blood_pressure_systolic, input_data.blood_pressure_diastolic,
+   501→        input_data.glucose, input_data.cholesterol,
+   502→        input_data.heart_rate, input_data.insulin,
+   503→    ]])
+   504→    user_scaled = scaler.transform(user_vector)
+   505→
+   506→    # Find 3 nearest neighbors (to get top 2 excluding potential self-matches)
+   507→    distances, indices = nn_model.kneighbors(user_scaled, n_neighbors=3)
+   508→
+   509→    matches = []
+   510→    seen_ids = set()
+   511→    for i in range(len(indices[0])):
+   512→        idx = indices[0][i]
+   513→        patient = df_patients.iloc[idx]
+   514→        similarity = round(1.0 - distances[0][i], 4)  # Convert distance to similarity
+   515→
+   516→        if patient["patient_id"] in seen_ids:
+   517→            continue
+   518→        seen_ids.add(patient["patient_id"])
+   519→
+   520→        # Identify overlapping risk traits
+   521→        user_traits = {
+   522→            "age": input_data.age,
+   523→            "bmi": input_data.bmi,
+   524→            "bp_sys": input_data.blood_pressure_systolic,
+   525→            "glucose": input_data.glucose,
+   526→            "cholesterol": input_data.cholesterol,
+   527→        }
+   528→        patient_traits = {
+   529→            "age": patient["age"],
+   530→            "bmi": patient["bmi"],
+   531→            "bp_sys": patient["blood_pressure_systolic"],
+   532→            "glucose": patient["glucose"],
+   533→            "cholesterol": patient["cholesterol"],
+   534→        }
+   535→
+   536→        # Find which traits are in the same risk zone
+   537→        overlapping = []
+   538→        for key in user_traits:
+   539→            u, p = user_traits[key], patient_traits[key]
+   540→            diff_pct = abs(u - p) / max(u, p, 1) * 100
+   541→            if diff_pct < 15:
+   542→                trait_label = key.replace("_", " ").title()
+   543→                overlapping.append({
+   544→                    "trait": trait_label,
+   545→                    "user_value": float(u),
+   546→                    "patient_value": float(p),
+   547→                    "deviation_pct": round(diff_pct, 1),
+   548→                })
+   549→
+   550→        match_data = {
+   551→            "patient_id": patient["patient_id"],
+   552→            "similarity_score": similarity,
+   553→            "profile": {
+   554→                "age": int(patient["age"]),
+   555→                "bmi": float(patient["bmi"]),
+   556→                "blood_pressure": f"{int(patient['blood_pressure_systolic'])}/{int(patient['blood_pressure_diastolic'])}",
+   557→                "glucose": int(patient["glucose"]),
+   558→                "cholesterol": int(patient["cholesterol"]),
+   559→                "heart_rate": int(patient["heart_rate"]),
+   560→            },
+   561→            "risk_level": patient["risk_level"],
+   562→            "diagnosis": patient["diagnosis"],
+   563→            "overlapping_traits": overlapping,
+   564→            "historical_progression": patient["progression_notes"],
+   565→        }
+   566→        matches.append(match_data)
+   567→        if len(matches) >= 2:
+   568→            break
+   569→
+   570→    return MatchResponse(matches=matches)
+   571→
+   572→
+   573→@app.post("/api/hospitals", response_model=HospitalResponse)
+   574→async def recommend_hospitals(input_data: HealthInput):
+   575→    """
+   576→    Recommend hospitals based on predicted risk category and required specialties.
+   577→    Sorts by specialization match score and proximity.
+   578→    """
+   579→    if df_hospitals is None or model is None or scaler is None:
+   580→        raise HTTPException(status_code=503, detail="Model not initialized")
+   581→
+   582→    # Determine required specialties from health inputs
+   583→    required_specialties = ["Internal Medicine"]  # Always useful
+   584→
+   585→    if input_data.blood_pressure_systolic > 130 or input_data.cholesterol > 200:
+   586→        required_specialties.append("Cardiology")
+   587→    if input_data.glucose > 100 or input_data.bmi > 30:
+   588→        required_specialties.append("Endocrinology")
+   589→    if input_data.glucose > 126 and input_data.blood_pressure_systolic > 140:
+   590→        required_specialties.append("Nephrology")
+   591→
+   592→    # Quick risk prediction for sorting context
+   593→    user_vector = np.array([[
+   594→        input_data.age, input_data.bmi,
+   595→        input_data.blood_pressure_systolic, input_data.blood_pressure_diastolic,
+   596→        input_data.glucose, input_data.cholesterol,
+   597→        input_data.heart_rate, input_data.insulin,
+   598→    ]])
+   599→    user_scaled = scaler.transform(user_vector)
+   600→    pred = model.predict(user_scaled)[0]
+   601→    inv_map = {0: "low", 1: "moderate", 2: "high"}
+   602→    risk_tier = inv_map[pred]
+   603→
+   604→    # Score each hospital
+   605→    results = []
+   606→    for _, hospital in df_hospitals.iterrows():
+   607→        h_specs = hospital["specialties"]
+   608→
+   609→        # Count matching specialties
+   610→        spec_matches = len(set(required_specialties) & set(h_specs))
+   611→        spec_score = spec_matches / len(required_specialties) if required_specialties else 0
+   612→
+   613→        # Distance score (closer is better, normalize to 0-1)
+   614→        distance_score = max(0, 1 - hospital["distance_km"] / 20)
+   615→
+   616→        # Rating score
+   617→        rating_score = hospital["rating"] / 5.0
+   618→
+   619→        # For high risk, prefer specialized hospitals even if farther
+   620→        if risk_tier == "high":
+   621→            # Heavily weight specialty match and rating
+   622→            combined_score = spec_score * 0.45 + rating_score * 0.35 + distance_score * 0.20
+   623→        else:
+   624→            combined_score = spec_score * 0.35 + rating_score * 0.25 + distance_score * 0.40
+   625→
+   626→        results.append({
+   627→            "id": hospital["id"],
+   628→            "name": hospital["name"],
+   629→            "matched_specialties": list(set(required_specialties) & set(h_specs)),
+   630→            "all_specialties": h_specs,
+   631→            "rating": hospital["rating"],
+   632→            "distance_km": hospital["distance_km"],
+   633→            "address": hospital["address"],
+   634→            "phone": hospital["phone"],
+   635→            "beds": int(hospital["beds"]),
+   636→            "emergency": hospital["emergency"],
+   637→            "match_score": round(combined_score, 4),
+   638→        })
+   639→
+   640→    # Sort by combined match score descending
+   641→    results.sort(key=lambda x: x["match_score"], reverse=True)
+   642→
+   643→    return HospitalResponse(hospitals=results)
+   644→
+   645→
+   646→# ========================================================================
+   647→# 4. GEMINI AI INTEGRATION
+   648→# ========================================================================
+   649→async def generate_gemini_summary(
+   650→    risk: dict,
+   651→    matches: list,
+   652→    hospitals: list,
+   653→    api_key: str,
+   654→    user_input: HealthInput,
+   655→) -> str:
+   656→    """
+   657→    Call Google Gemini API to generate a professional, reassuring medical summary.
+   658→    """
+   659→    try:
+   660→        import google.generativeai as genai
+   661→        genai.configure(api_key=api_key)
+   662→        gemini_model = genai.GenerativeModel("gemini-2.0-flash")
+   663→
+   664→        prompt = f"""
+   665→You are a professional medical AI assistant. Based on the following health risk assessment, 
+   666→generate a clean, reassuring, and professional medical summary and action plan.
+   667→
+   668→**IMPORTANT**: This is NOT a medical diagnosis. Always recommend the user consult a healthcare professional.
+   669→
+   670→## User Health Inputs:
+   671→- Age: {user_input.age} years
+   672→- BMI: {user_input.bmi}
+   673→- Blood Pressure: {user_input.blood_pressure_systolic}/{user_input.blood_pressure_diastolic} mmHg
+   674→- Fasting Glucose: {user_input.glucose} mg/dL
+   675→- Total Cholesterol: {user_input.cholesterol} mg/dL
+   676→- Heart Rate: {user_input.heart_rate} bpm
+   677→- Insulin: {user_input.insulin} mu U/mL
+   678→
+   679→## Risk Assessment Results:
+   680→- Risk Tier: {risk['risk_tier'].upper()}
+   681→- Confidence Score: {risk['risk_score'] * 100:.1f}%
+   682→- Probability Breakdown: Low={risk['risk_probability']['low']*100:.1f}%, Moderate={risk['risk_probability']['moderate']*100:.1f}%, High={risk['risk_probability']['high']*100:.1f}%
+   683→- Most Influential Factors: {', '.join(list(risk['feature_importance'].keys())[:3])}
+   684→
+   685→## Historical Patient Matches (Similar Cases):
+   686→{chr(10).join([f"- Patient {m['patient_id']} (Similarity: {m['similarity_score']*100:.1f}%): Diagnosed with {m['diagnosis']}. Progression: {m['historical_progression']}" for m in matches])}
+   687→
+   688→## Recommended Hospitals (Top 3):
+   689→{chr(10).join([f"- {h['name']}: Rating {h['rating']}/5, {h['distance_km']}km away, Specialties: {', '.join(h['matched_specialties'])}" for h in hospitals[:3]])}
+   690→
+   691→Please provide:
+   692→1. **Summary**: A brief, reassuring explanation of the results (2-3 sentences)
+   693→2. **Key Risk Factors**: What the top contributing factors mean
+   694→3. **Recommended Actions**: 3-5 actionable next steps
+   695→4. **Hospital Guidance**: Which hospital to consider and why
+   696→
+   697→Keep the tone professional, empathetic, and non-alarmist. Use markdown formatting.
+   698→"""
+   699→        response = await gemini_model.generate_content_async(prompt)
+   700→        return response.text
+   701→    except Exception as e:
+   702→        logger.error(f"Gemini API error: {e}")
+   703→        return None
+   704→
+   705→
+   706→@app.post("/api/full-prediction")
+   707→async def full_prediction(input_data: HealthInput):
+   708→    """
+   709→    Combined endpoint: runs risk prediction, similarity matching, hospital
+   710→    recommendation, and optionally Gemini AI summary in one call.
+   711→    """
+   712→    # 1. Risk Prediction
+   713→    risk_result = await predict_risk(input_data)
+   714→    risk_dict = risk_result.model_dump()
+   715→
+   716→    # 2. Historical Similarity Matching
+   717→    match_result = await find_similar_patients(input_data)
+   718→    matches = match_result.matches
+   719→
+   720→    # 3. Hospital Recommendation
+   721→    hospital_result = await recommend_hospitals(input_data)
+   722→    hospitals = hospital_result.hospitals
+   723→
+   724→    # 4. Optional Gemini AI Summary
+   725→    ai_summary = None
+   726→    if input_data.gemini_api_key:
+   727→        ai_summary = await generate_gemini_summary(
+   728→            risk_dict, matches, hospitals,
+   729→            input_data.gemini_api_key, input_data,
+   730→        )
+   731→
+   732→    return FullPredictionResponse(
+   733→        risk=risk_result,
+   734→        historical_matches=matches,
+   735→        recommended_hospitals=hospitals,
+   736→        ai_summary=ai_summary,
+   737→    )
+   738→
