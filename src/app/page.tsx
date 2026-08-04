@@ -129,7 +129,7 @@ export default function Page() {
   const [view, setView] = useState<"landing" | "app">("landing");
   const [inputs, setInputs] = useState<HealthInputs>({ ...DEFAULT_INPUTS });
   const [city, setCity] = useState("");
-  const [stateVal, setStateVal] = useState("");
+  const stateVal = "Andhra Pradesh";
   const [cities, setCities] = useState<CityOption[]>([]);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -241,7 +241,7 @@ export default function Page() {
               className="flex items-center justify-center gap-8 pt-4 text-sm text-slate-400">
               <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-400" />500 Patient DB</span>
               <span className="flex items-center gap-1.5"><Gauge className="h-4 w-4 text-teal-400" />ML Classification</span>
-              <span className="flex items-center gap-1.5"><Building2 className="h-4 w-4 text-cyan-400" />23 Hospitals</span>
+              <span className="flex items-center gap-1.5"><Building2 className="h-4 w-4 text-cyan-400" />33 AP Hospitals</span>
             </motion.div>
           </div>
         </motion.section>
@@ -293,12 +293,12 @@ export default function Page() {
                       <div className="text-sm text-slate-400">Synthetic Patient Records</div>
                     </div>
                     <div className="space-y-2">
-                      <div className="text-3xl font-bold text-teal-400">23</div>
-                      <div className="text-sm text-slate-400">Partner Hospital Facilities</div>
+                      <div className="text-3xl font-bold text-teal-400">33</div>
+                      <div className="text-sm text-slate-400">AP Hospital Facilities</div>
                     </div>
                     <div className="space-y-2">
-                      <div className="text-3xl font-bold text-cyan-400">6</div>
-                      <div className="text-sm text-slate-400">US Cities Covered</div>
+                      <div className="text-3xl font-bold text-cyan-400">14</div>
+                      <div className="text-sm text-slate-400">AP Cities Covered</div>
                     </div>
                   </div>
                   <Button size="lg" onClick={() => setView("app")}
@@ -402,24 +402,18 @@ export default function Page() {
                   <CardTitle className="flex items-center gap-2 text-base">
                     <MapPinned className="h-4 w-4 text-orange-600" />Your Location
                   </CardTitle>
-                  <CardDescription>Select your city for nearby hospital recommendations.</CardDescription>
+                  <CardDescription>Select your city in Andhra Pradesh for nearby hospital recommendations.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">City</Label>
-                      <Select value={city} onValueChange={(v) => { setCity(v); const found = cities.find(c => c.city === v); if (found) setStateVal(found.state); }}>
-                        <SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger>
-                        <SelectContent>{cities.map(c => <SelectItem key={c.city + c.state} value={c.city}>{c.city}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">State</Label>
-                      <Select value={stateVal} onValueChange={setStateVal}>
-                        <SelectTrigger><SelectValue placeholder="State" /></SelectTrigger>
-                        <SelectContent>{[...new Set(cities.map(c => c.state))].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">City</Label>
+                    <Select value={city} onValueChange={setCity}>
+                      <SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger>
+                      <SelectContent>{cities.map(c => <SelectItem key={c.city + c.state} value={c.city}>{c.city}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" />State: <span className="font-medium text-foreground">Andhra Pradesh</span>
                   </div>
                 </CardContent>
               </Card>

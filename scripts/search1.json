@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.kaggle.com/datasets/junaid6731/hospital-reviews-dataset/data",
+    "name": "Hospital Reviews Dataset",
+    "snippet": "This dataset contains sentiment-labeled reviews collected from Google Maps for various hospitals in Bengaluru, India. The feedback includes textual reviews ... Read more",
+    "host_name": "www.kaggle.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/datasets/fringewidth/hospitals-in-india/data",
+    "name": "Hospitals In India",
+    "snippet": "This dataset contains anonymized information on hospitals across India. It includes location information, ratings , and the number of reviews .",
+    "host_name": "www.kaggle.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/datasets/fringewidth/hospitals-in-india",
+    "name": "Hospitals In India",
+    "snippet": "This dataset contains anonymized information on hospitals across India. It includes location information, ratings , and the number of reviews .",
+    "host_name": "www.kaggle.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/datasets/thedevastator/hcahps-hospital-ratings-survey",
+    "name": "HCAHPS Hospital Ratings Survey",
+    "snippet": "This dataset contains ratings of hospitals , based on the Hospital Consumer Assessment of Healthcare Providers and Systems (HCAHPS). Read more",
+    "host_name": "www.kaggle.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/datasets/center-for-medicare-and-medicaid/hospital-ratings",
+    "name": "Hospital ratings",
+    "snippet": "The official dataset used on Medicare.gov for hospital quality comparison.",
+    "host_name": "www.kaggle.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/datasets/junaid6731/hospital-reviews-dataset",
+    "name": "Hospital Reviews Dataset",
+    "snippet": "Discover what actually works in AI. Join millions of builders, researchers, and labs evaluating agents, models, and frontier technology through crowdsourced\nJoin millions of builders, researchers, and labs evaluating agents, models, and frontier technology through crowdsourced benchmarks, competitions, and hackathons.",
+    "host_name": "www.kaggle.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=1ql4kNv0_qY&vl=en",
+    "name": "Where to find the Best Healthcare Data",
+    "snippet": "I'm going to walk you through those exact websites where I got real data as well as sample data sets just to practice and use Healthcare data.",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/datasets/prasad22/ca-independent-medical-review",
+    "name": "California Independent Medical Review Dataset",
+    "snippet": "This data is from the California Department of Managed Health Care (DMHC). It contains all decisions from Independent Medical Reviews (IMR)",
+    "host_name": "www.kaggle.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/code/himanshunegi2000/hospitals-data-scraping-beginner",
+    "name": "Hospitals_Data_Scraping (Beginner)",
+    "snippet": "Explore and run AI code with Kaggle Notebooks | Using data from Hospitals in India - Dataset .",
+    "host_name": "www.kaggle.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/datasets",
+    "name": "Find Open Datasets and Machine Learning Projects | Kaggle",
+    "snippet": "Browse and download hundreds of thousands of open datasets for AI research, model training, and analysis. Join a community of millions of researchers, developers, and builders to share and collaborate on Kaggle.",
+    "host_name": "www.kaggle.com",
+    "rank": 9,
+    "date": "Jul 31, 2026",
+    "favicon": ""
+  }
+]

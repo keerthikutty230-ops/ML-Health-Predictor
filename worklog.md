@@ -50,3 +50,24 @@ Stage Summary:
 - Conditional care guidance works correctly: Low→wellness tips, Moderate→OTC guidance, High→emergency escalation
 - Location-aware hospital filtering works with city auto-fill and state sync
 - Zero console errors, all network requests return 200
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Replace US hospital database with real Andhra Pradesh hospitals covering all major cities
+
+Work Log:
+- Searched Kaggle, Google Reviews, hospital websites, and NTR Vaidya Seva empanelment lists for AP hospital data
+- Compiled 33 real hospitals across 14 AP cities with actual names, addresses, phone numbers, Google ratings, bed counts, and specialties
+- Cities covered: Vijayawada (4), Guntur (4), Visakhapatnam (4), Tirupati (3), Kakinada (3), Rajahmundry (2), Nellore (2), Kurnool (2), Anantapur (2), Ongole (2), Eluru (2), Kadapa (1), Chittoor (1), Vizianagaram (1)
+- Key hospitals: Manipal Vijayawada (4.5), Aster Ramesh Guntur (4.6), KIMS ICON Vizag (4.5), SVIMS Tirupati (4.4), Apollo Kakinada (3.8)
+- Ratings sourced from actual Google Reviews (searched via web-search)
+- Updated backend: default city=Vijayawada, default state=Andhra Pradesh, emergency number changed to 108
+- Updated frontend: removed State dropdown, hardcoded 'Andhra Pradesh', updated stats to 33 hospitals / 14 cities
+- E2E verified: all 10 checks passed, hospitals correctly filtered by AP city
+
+Stage Summary:
+- 33 real AP hospitals with Google-verified ratings, real addresses, Indian phone numbers
+- Hospital shortlisting by specialty match (Cardiology, Endocrinology, Nephrology) weighted with review ratings
+- Location covers all major AP cities from Vijayawada to Vizianagaram
+- Zero console errors, full E2E verified
