@@ -1,0 +1,920 @@
+     1→"use client";
+     2→
+     3→import React, { useState, useCallback, useEffect, useRef } from "react";
+     4→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+     5→import { Button } from "@/components/ui/button";
+     6→import { Badge } from "@/components/ui/badge";
+     7→import { Input } from "@/components/ui/input";
+     8→import { Label } from "@/components/ui/label";
+     9→import { Slider } from "@/components/ui/slider";
+    10→import { Separator } from "@/components/ui/separator";
+    11→import { Skeleton } from "@/components/ui/skeleton";
+    12→import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+    13→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+    14→import {
+    15→  Activity, Heart, Building2, Search, Shield, TrendingUp, User, Stethoscope,
+    16→  MapPin, Phone, Star, AlertTriangle, CheckCircle2, Info, FileText, Sparkles,
+    17→  ChevronDown, ChevronUp, ChevronRight, Loader2, Zap, BarChart3, ShieldCheck,
+    18→  Pill, Syringe, AlertOctagon, ArrowRight, MapPinned, Cross, ClipboardList, Users, Gauge,
+    19→} from "lucide-react";
+    20→import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+    21→
+    22→/* ------------------------------------------------------------------ */
+    23→/*  Types                                                              */
+    24→/* ------------------------------------------------------------------ */
+    25→interface HealthInputs {
+    26→  age: number; bmi: number; blood_pressure_systolic: number;
+    27→  blood_pressure_diastolic: number; glucose: number; cholesterol: number;
+    28→  heart_rate: number; insulin: number;
+    29→}
+    30→interface OverlappingTrait { trait: string; user_value: number; patient_value: number; deviation_pct: number; }
+    31→interface UserProfile {
+    32→  age: number; bmi: number; blood_pressure: string; glucose: number;
+    33→  cholesterol: number; heart_rate: number; insulin: number; location: string;
+    34→}
+    35→interface HistoricalMatch {
+    36→  patient_id: string; similarity_score: number;
+    37→  profile: { age: number; bmi: number; blood_pressure: string; glucose: number; cholesterol: number; heart_rate: number };
+    38→  risk_level: string; diagnosis: string; overlapping_traits: OverlappingTrait[]; historical_progression: string;
+    39→}
+    40→interface Hospital {
+    41→  id: string; name: string; city: string; state: string; matched_specialties: string[];
+    42→  all_specialties: string[]; rating: number; distance_km: number; address: string;
+    43→  phone: string; beds: number; emergency: boolean; doctors: string[]; match_score: number;
+    44→}
+    45→interface RiskResult {
+    46→  risk_tier: string; risk_score: number;
+    47→  risk_probability: { low: number; moderate: number; high: number };
+    48→  feature_importance: Record<string, number>;
+    49→}
+    50→interface CareGuide { title: string; precautions: string[]; otc_guidance: string[]; avoid: string[]; }
+    51→interface CareGuidance {
+    52→  tier: string; show_medications: boolean; emergency_escalation: boolean;
+    53→  message: string; actions?: string[]; care_guides?: CareGuide[]; disclaimer?: string;
+    54→}
+    55→interface CityOption { city: string; state: string; }
+    56→interface PredictionResult {
+    57→  risk: RiskResult; historical_matches: HistoricalMatch[];
+    58→  recommended_hospitals: Hospital[]; care_guidance: CareGuidance;
+    59→  user_profile: UserProfile; ai_summary: string | null;
+    60→}
+    61→
+    62→type RiskTier = "low" | "moderate" | "high";
+    63→
+    64→/* ------------------------------------------------------------------ */
+    65→/*  Constants                                                          */
+    66→/* ------------------------------------------------------------------ */
+    67→const DEFAULT_INPUTS: HealthInputs = {
+    68→  age: 45, bmi: 25.0, blood_pressure_systolic: 120, blood_pressure_diastolic: 80,
+    69→  glucose: 95, cholesterol: 190, heart_rate: 72, insulin: 15.0,
+    70→};
+    71→
+    72→interface SliderField {
+    73→  key: keyof HealthInputs; label: string; unit: string;
+    74→  min: number; max: number; step: number; icon: React.ReactNode;
+    75→  tooltip: string; normalRange: [number, number];
+    76→}
+    77→const SLIDER_FIELDS: SliderField[] = [
+    78→  { key: "age", label: "Age", unit: "years", min: 1, max: 100, step: 1, icon: <User className="h-4 w-4" />, tooltip: "Patient age", normalRange: [18, 65] },
+    79→  { key: "bmi", label: "BMI", unit: "kg/m2", min: 10, max: 50, step: 0.1, icon: <Activity className="h-4 w-4" />, tooltip: "Body Mass Index (18.5-24.9 normal)", normalRange: [18.5, 24.9] },
+    80→  { key: "blood_pressure_systolic", label: "Systolic BP", unit: "mmHg", min: 70, max: 220, step: 1, icon: <Heart className="h-4 w-4" />, tooltip: "Systolic BP (normal <120)", normalRange: [90, 120] },
+    81→  { key: "blood_pressure_diastolic", label: "Diastolic BP", unit: "mmHg", min: 40, max: 140, step: 1, icon: <Heart className="h-4 w-4" />, tooltip: "Diastolic BP (normal <80)", normalRange: [60, 80] },
+    82→  { key: "glucose", label: "Fasting Glucose", unit: "mg/dL", min: 40, max: 350, step: 1, icon: <Zap className="h-4 w-4" />, tooltip: "Fasting glucose (normal 70-100)", normalRange: [70, 100] },
+    83→  { key: "cholesterol", label: "Total Cholesterol", unit: "mg/dL", min: 80, max: 450, step: 1, icon: <BarChart3 className="h-4 w-4" />, tooltip: "Cholesterol (desirable <200)", normalRange: [100, 200] },
+    84→  { key: "heart_rate", label: "Heart Rate", unit: "bpm", min: 30, max: 200, step: 1, icon: <Activity className="h-4 w-4" />, tooltip: "Resting heart rate (60-100 normal)", normalRange: [60, 100] },
+    85→  { key: "insulin", label: "Insulin", unit: "uU/mL", min: 0, max: 300, step: 0.5, icon: <Activity className="h-4 w-4" />, tooltip: "Fasting insulin (2-20 normal)", normalRange: [2, 20] },
+    86→];
+    87→
+    88→const RISK_CFG: Record<RiskTier, {
+    89→  color: string; bg: string; badge: string; icon: React.ReactNode;
+    90→  bar: string; label: string; desc: string;
+    91→}> = {
+    92→  low: {
+    93→    color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200",
+    94→    badge: "bg-emerald-100 text-emerald-800 border-emerald-300",
+    95→    icon: <CheckCircle2 className="h-6 w-6 text-emerald-600" />, bar: "bg-emerald-500",
+    96→    label: "Low Risk", desc: "Your health indicators are within normal ranges.",
+    97→  },
+    98→  moderate: {
+    99→    color: "text-amber-700", bg: "bg-amber-50 border-amber-200",
+   100→    badge: "bg-amber-100 text-amber-800 border-amber-300",
+   101→    icon: <AlertTriangle className="h-6 w-6 text-amber-600" />, bar: "bg-amber-500",
+   102→    label: "Moderate Risk", desc: "Some indicators suggest elevated risk factors.",
+   103→  },
+   104→  high: {
+   105→    color: "text-red-700", bg: "bg-red-50 border-red-200",
+   106→    badge: "bg-red-100 text-red-800 border-red-300",
+   107→    icon: <AlertOctagon className="h-6 w-6 text-red-600" />, bar: "bg-red-500",
+   108→    label: "High Risk", desc: "Multiple indicators suggest significant health concerns.",
+   109→  },
+   110→};
+   111→
+   112→const fadeIn = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.5 } };
+   113→const ML = "/api/ml";
+   114→
+   115→async function apiFetch(url: string, opts?: RequestInit) {
+   116→  const res = await fetch(url, opts);
+   117→  if (!res.ok) throw new Error(`API error ${res.status}`);
+   118→  return res.json();
+   119→}
+   120→
+   121→function getRiskCfg(tier: string) {
+   122→  return RISK_CFG[tier as RiskTier] ?? RISK_CFG.low;
+   123→}
+   124→
+   125→/* ================================================================== */
+   126→/*  MAIN PAGE                                                         */
+   127→/* ================================================================== */
+   128→export default function Page() {
+   129→  const [view, setView] = useState<"landing" | "app">("landing");
+   130→  const [inputs, setInputs] = useState<HealthInputs>({ ...DEFAULT_INPUTS });
+   131→  const [city, setCity] = useState("");
+   132→  const stateVal = "Andhra Pradesh";
+   133→  const [cities, setCities] = useState<CityOption[]>([]);
+   134→  const [result, setResult] = useState<PredictionResult | null>(null);
+   135→  const [loading, setLoading] = useState(false);
+   136→  const [error, setError] = useState<string | null>(null);
+   137→  const [geminiKey, setGeminiKey] = useState("");
+   138→  const [showGemini, setShowGemini] = useState(false);
+   139→  const [expandedGuide, setExpandedGuide] = useState<number | null>(null);
+   140→  const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">("checking");
+   141→  const resultsRef = useRef<HTMLDivElement>(null);
+   142→  const { scrollY } = useScroll();
+   143→  const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
+   144→  const heroScale = useTransform(scrollY, [0, 300], [1, 0.95]);
+   145→
+   146→  useEffect(() => {
+   147→    apiFetch(`${ML}/status`).then(d => {
+   148→      setApiStatus("online");
+   149→      if (d.cities_available) setCities(d.cities_available);
+   150→    }).catch(() => setApiStatus("offline"));
+   151→  }, []);
+   152→
+   153→  const updateInput = useCallback((key: keyof HealthInputs, v: number) =>
+   154→    setInputs(p => ({ ...p, [key]: v })), []);
+   155→
+   156→  const handleAnalyze = async () => {
+   157→    setLoading(true); setError(null); setResult(null);
+   158→    try {
+   159→      const data = await apiFetch(`${ML}/full-prediction`, {
+   160→        method: "POST",
+   161→        headers: { "Content-Type": "application/json" },
+   162→        body: JSON.stringify({ ...inputs, city, state: stateVal, gemini_api_key: geminiKey || undefined }),
+   163→      });
+   164→      setResult(data);
+   165→      setView("app");
+   166→      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 200);
+   167→    } catch (e) {
+   168→      setError(e instanceof Error ? e.message : "Unexpected error");
+   169→    } finally { setLoading(false); }
+   170→  };
+   171→
+   172→  const handleReset = () => {
+   173→    setInputs({ ...DEFAULT_INPUTS }); setResult(null); setError(null);
+   174→  };
+   175→
+   176→  const rc = result ? getRiskCfg(result.risk.risk_tier) : null;
+   177→
+   178→  /* ======================= LANDING PAGE ======================= */
+   179→  if (view === "landing") {
+   180→    return (
+   181→      <TooltipProvider>
+   182→      <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 text-white">
+   183→        {/* NAV */}
+   184→        <nav className="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-white/10">
+   185→          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+   186→            <div className="flex items-center gap-2.5">
+   187→              <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+   188→                <Stethoscope className="h-4.5 w-4.5 text-white" />
+   189→              </div>
+   190→              <span className="font-bold text-lg tracking-tight">HealthPredict AI</span>
+   191→            </div>
+   192→            <div className="flex items-center gap-3">
+   193→              <Badge variant="outline" className={apiStatus === "online" ? "border-emerald-500/50 text-emerald-400 bg-emerald-500/10" : "border-red-500/50 text-red-400 bg-red-500/10"}>
+   194→                <span className={"h-1.5 w-1.5 rounded-full mr-1.5 " + (apiStatus === "online" ? "bg-emerald-400" : "bg-red-400 animate-pulse")} />
+   195→                {apiStatus === "online" ? "ML Online" : "Connecting"}
+   196→              </Badge>
+   197→              <Button onClick={() => setView("app")}
+   198→                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-lg shadow-emerald-500/25 h-9 text-sm font-semibold px-5">
+   199→                Launch App
+   200→              </Button>
+   201→            </div>
+   202→          </div>
+   203→        </nav>
+   204→
+   205→        {/* HERO */}
+   206→        <motion.section style={{ opacity: heroOpacity, scale: heroScale }}
+   207→          className="min-h-screen flex items-center justify-center px-4 pt-16">
+   208→          <div className="max-w-4xl mx-auto text-center space-y-8">
+   209→            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+   210→              <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 mb-6 px-4 py-1.5 text-sm">
+   211→                ML-Powered Health Intelligence
+   212→              </Badge>
+   213→              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+   214→                Know Your Health<br />
+   215→                <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+   216→                  Before It Knows You
+   217→                </span>
+   218→              </h1>
+   219→            </motion.div>
+   220→            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+   221→              transition={{ duration: 0.7, delay: 0.15 }}
+   222→              className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+   223→              AI-driven chronic disease risk assessment with patient similarity matching,
+   224→              location-aware hospital recommendations, and intelligent care guidance \u2014 all in seconds.
+   225→            </motion.p>
+   226→            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+   227→              transition={{ duration: 0.7, delay: 0.3 }}
+   228→              className="flex flex-col sm:flex-row gap-4 justify-center">
+   229→              <Button size="lg" onClick={() => setView("app")}
+   230→                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-xl shadow-emerald-500/30 h-12 text-base font-semibold px-8">
+   231→                <Search className="h-5 w-5 mr-2" />Start Health Assessment
+   232→              </Button>
+   233→              <Button size="lg" variant="outline"
+   234→                className="border-white/20 text-white hover:bg-white/10 h-12 text-base px-8"
+   235→                onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}>
+   236→                Learn More <ChevronDown className="h-4 w-4 ml-1" />
+   237→              </Button>
+   238→            </motion.div>
+   239→            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+   240→              transition={{ duration: 1, delay: 0.6 }}
+   241→              className="flex items-center justify-center gap-8 pt-4 text-sm text-slate-400">
+   242→              <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-400" />500 Patient DB</span>
+   243→              <span className="flex items-center gap-1.5"><Gauge className="h-4 w-4 text-teal-400" />ML Classification</span>
+   244→              <span className="flex items-center gap-1.5"><Building2 className="h-4 w-4 text-cyan-400" />33 AP Hospitals</span>
+   245→            </motion.div>
+   246→          </div>
+   247→        </motion.section>
+   248→
+   249→        {/* FEATURES GRID */}
+   250→        <section className="py-20 px-4">
+   251→          <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+   252→            {[
+   253→              { icon: <Gauge className="h-6 w-6" />, title: "ML Risk Engine", desc: "Gradient Boosting Classifier trained on 500 synthetic patient records evaluates 8 clinical biomarkers for chronic disease risk." },
+   254→              { icon: <Users className="h-6 w-6" />, title: "Patient Similarity Proof", desc: "KNN cosine similarity finds the top 2 closest historical cases, showing overlapping traits and clinical progression as evidence." },
+   255→              { icon: <MapPinned className="h-6 w-6" />, title: "Location-Aware Hospitals", desc: "Select your city and state to get matched with nearby specialized facilities and doctors, sorted by relevance." },
+   256→              { icon: <ClipboardList className="h-6 w-6" />, title: "Conditional Care Guidance", desc: "Moderate risk shows OTC precautions. High risk triggers emergency escalation \u2014 no unsafe medication suggestions." },
+   257→              { icon: <Sparkles className="h-6 w-6" />, title: "Gemini AI Summary", desc: "Optional integration with Google Gemini generates a compassionate, professional executive health summary." },
+   258→              { icon: <Shield className="h-6 w-6" />, title: "Privacy-First Design", desc: "All data is synthetic and anonymized. No personal health data is stored or transmitted beyond your session." },
+   259→            ].map((f, i) => (
+   260→              <motion.div key={i} initial={{ opacity: 0, y: 20 }}
+   261→                whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+   262→                transition={{ duration: 0.5, delay: i * 0.08 }}>
+   263→                <Card className="bg-white/5 border-white/10 hover:bg-white/10 hover:border-emerald-500/30 transition-all h-full">
+   264→                  <CardContent className="pt-6">
+   265→                    <div className="h-12 w-12 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 mb-4">{f.icon}</div>
+   266→                    <h3 className="font-semibold text-white mb-2">{f.title}</h3>
+   267→                    <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
+   268→                  </CardContent>
+   269→                </Card>
+   270→              </motion.div>
+   271→            ))}
+   272→          </div>
+   273→        </section>
+   274→
+   275→        {/* ABOUT US */}
+   276→        <section id="about" className="py-20 px-4">
+   277→          <div className="max-w-4xl mx-auto">
+   278→            <motion.div {...fadeIn} whileInView>
+   279→              <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20">
+   280→                <CardContent className="pt-8 pb-8 text-center space-y-6">
+   281→                  <div className="h-16 w-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center mx-auto">
+   282→                    <Stethoscope className="h-8 w-8 text-emerald-400" />
+   283→                  </div>
+   284→                  <h2 className="text-2xl sm:text-3xl font-bold">About HealthPredict AI</h2>
+   285→                  <p className="text-slate-300 max-w-2xl mx-auto leading-relaxed">
+   286→                    Our mission is to make health risk intelligence transparent, accessible, and actionable.
+   287→                    We believe everyone deserves to understand their health metrics in context \u2014 with evidence
+   288→                    from comparable patient histories and clear pathways to professional care.
+   289→                  </p>
+   290→                  <div className="grid sm:grid-cols-3 gap-6 pt-4">
+   291→                    <div className="space-y-2">
+   292→                      <div className="text-3xl font-bold text-emerald-400">500+</div>
+   293→                      <div className="text-sm text-slate-400">Synthetic Patient Records</div>
+   294→                    </div>
+   295→                    <div className="space-y-2">
+   296→                      <div className="text-3xl font-bold text-teal-400">33</div>
+   297→                      <div className="text-sm text-slate-400">AP Hospital Facilities</div>
+   298→                    </div>
+   299→                    <div className="space-y-2">
+   300→                      <div className="text-3xl font-bold text-cyan-400">14</div>
+   301→                      <div className="text-sm text-slate-400">AP Cities Covered</div>
+   302→                    </div>
+   303→                  </div>
+   304→                  <Button size="lg" onClick={() => setView("app")}
+   305→                    className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xl shadow-emerald-500/25 h-11 mt-2">
+   306→                    <ArrowRight className="h-4 w-4 mr-2" />Begin Your Assessment
+   307→                  </Button>
+   308→                </CardContent>
+   309→              </Card>
+   310→            </motion.div>
+   311→          </div>
+   312→        </section>
+   313→
+   314→        <footer className="border-t border-white/10 mt-auto">
+   315→          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+   316→            <p>HealthPredict AI \u2014 For educational and informational purposes only. Not a medical diagnosis.</p>
+   317→            <p className="flex items-center gap-1">Scikit-Learn + FastAPI + Next.js</p>
+   318→          </div>
+   319→        </footer>
+   320→      </div>
+   321→      </TooltipProvider>
+   322→    );
+   323→  }
+   324→
+   325→  /* ======================= APP VIEW ======================= */
+   326→  return (
+   327→    <TooltipProvider>
+   328→    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-emerald-50/30">
+   329→      <header className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50">
+   330→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+   331→          <div className="flex items-center justify-between">
+   332→            <button onClick={() => { setView("landing"); setResult(null); }}
+   333→              className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+   334→              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
+   335→                <Stethoscope className="h-4 w-4 text-white" />
+   336→              </div>
+   337→              <div className="text-left hidden sm:block">
+   338→                <div className="text-sm font-bold text-gray-900 leading-tight">HealthPredict AI</div>
+   339→                <div className="text-[10px] text-muted-foreground">Intelligent Health Assessment</div>
+   340→              </div>
+   341→            </button>
+   342→            <Badge variant="outline"
+   343→              className={apiStatus === "online" ? "border-emerald-300 bg-emerald-50 text-emerald-700" : "border-red-300 bg-red-50 text-red-700"}>
+   344→              <span className={"h-1.5 w-1.5 rounded-full mr-1.5 " + (apiStatus === "online" ? "bg-emerald-500" : "bg-red-500 animate-pulse")} />
+   345→              {apiStatus === "online" ? "ML Online" : "Offline"}
+   346→            </Badge>
+   347→          </div>
+   348→        </div>
+   349→      </header>
+   350→
+   351→      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+   352→        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+   353→
+   354→          {/* ============ LEFT PANEL: INPUTS ============ */}
+   355→          <div className="lg:col-span-5 space-y-5">
+   356→            <motion.div {...fadeIn}>
+   357→              <Card className="border shadow-sm">
+   358→                <CardHeader className="pb-4">
+   359→                  <CardTitle className="flex items-center gap-2 text-base">
+   360→                    <FileText className="h-4 w-4 text-emerald-600" />Health Metrics
+   361→                  </CardTitle>
+   362→                  <CardDescription>Enter your biometrics for chronic disease risk analysis.</CardDescription>
+   363→                </CardHeader>
+   364→                <CardContent className="space-y-4">
+   365→                  {SLIDER_FIELDS.map(f => {
+   366→                    const v = inputs[f.key];
+   367→                    const [lo, hi] = f.normalRange;
+   368→                    const ok = v >= lo && v <= hi;
+   369→                    return (
+   370→                      <div key={f.key} className="space-y-1.5">
+   371→                        <div className="flex items-center justify-between">
+   372→                          <Label className="text-sm font-medium flex items-center gap-1.5">
+   373→                            {f.icon} {f.label}
+   374→                            <Tooltip><TooltipTrigger asChild>
+   375→                              <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+   376→                            </TooltipTrigger>
+   377→                            <TooltipContent side="right" className="max-w-xs">{f.tooltip}</TooltipContent></Tooltip>
+   378→                          </Label>
+   379→                          <div className="flex items-center gap-1.5">
+   380→                            <span className={"text-sm font-semibold tabular-nums " + (ok ? "text-emerald-600" : "text-red-500")}>{v}</span>
+   381→                            <span className="text-[10px] text-muted-foreground">{f.unit}</span>
+   382→                          </div>
+   383→                        </div>
+   384→                        <Slider value={[v]} onValueChange={([x]) => updateInput(f.key, x)}
+   385→                          min={f.min} max={f.max} step={f.step} className="w-full" />
+   386→                        <div className="flex justify-between text-[10px] text-muted-foreground">
+   387→                          <span>{f.min}</span>
+   388→                          <span className="text-emerald-600 font-medium">Normal: {lo} \u2013 {hi}</span>
+   389→                          <span>{f.max}</span>
+   390→                        </div>
+   391→                      </div>
+   392→                    );
+   393→                  })}
+   394→                </CardContent>
+   395→              </Card>
+   396→            </motion.div>
+   397→
+   398→            {/* LOCATION SELECTOR */}
+   399→            <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.08 }}>
+   400→              <Card className="border shadow-sm">
+   401→                <CardHeader className="pb-3">
+   402→                  <CardTitle className="flex items-center gap-2 text-base">
+   403→                    <MapPinned className="h-4 w-4 text-orange-600" />Your Location
+   404→                  </CardTitle>
+   405→                  <CardDescription>Select your city in Andhra Pradesh for nearby hospital recommendations.</CardDescription>
+   406→                </CardHeader>
+   407→                <CardContent className="space-y-3">
+   408→                  <div className="space-y-1.5">
+   409→                    <Label className="text-xs text-muted-foreground">City</Label>
+   410→                    <Select value={city} onValueChange={setCity}>
+   411→                      <SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger>
+   412→                      <SelectContent>{cities.map(c => <SelectItem key={c.city + c.state} value={c.city}>{c.city}</SelectItem>)}</SelectContent>
+   413→                    </Select>
+   414→                  </div>
+   415→                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+   416→                    <MapPin className="h-3 w-3" />State: <span className="font-medium text-foreground">Andhra Pradesh</span>
+   417→                  </div>
+   418→                </CardContent>
+   419→              </Card>
+   420→            </motion.div>
+   421→
+   422→            {/* GEMINI KEY */}
+   423→            <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.12 }}>
+   424→              <Card className="border shadow-sm">
+   425→                <CardHeader className="pb-3">
+   426→                  <div className="flex items-center justify-between cursor-pointer"
+   427→                    onClick={() => setShowGemini(!showGemini)} role="button" tabIndex={0}
+   428→                    onKeyDown={e => { if (e.key === "Enter" || e.key === " ") setShowGemini(!showGemini); }}>
+   429→                    <CardTitle className="flex items-center gap-2 text-base">
+   430→                      <Sparkles className="h-4 w-4 text-violet-600" />AI Summary
+   431→                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">Optional</Badge>
+   432→                    </CardTitle>
+   433→                    {showGemini ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+   434→                  </div>
+   435→                </CardHeader>
+   436→                <AnimatePresence>
+   437→                  {showGemini && (
+   438→                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+   439→                      exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+   440→                      <CardContent className="pt-0">
+   441→                        <Label className="text-sm text-muted-foreground">Google Gemini API key for AI medical summary.</Label>
+   442→                        <Input type="password" placeholder="AIza..." value={geminiKey}
+   443→                          onChange={e => setGeminiKey(e.target.value)} className="mt-2" />
+   444→                      </CardContent>
+   445→                    </motion.div>
+   446→                  )}
+   447→                </AnimatePresence>
+   448→              </Card>
+   449→            </motion.div>
+   450→
+   451→            {/* ACTION BUTTONS */}
+   452→            <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.15 }} className="flex gap-3">
+   453→              <Button onClick={handleAnalyze}
+   454→                disabled={loading || apiStatus !== "online" || !city}
+   455→                className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg shadow-emerald-600/20 h-11 text-sm font-semibold">
+   456→                {loading
+   457→                  ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Analyzing...</>
+   458→                  : <><Search className="h-4 w-4 mr-2" />Run Prediction</>}
+   459→              </Button>
+   460→              <Button variant="outline" onClick={handleReset} disabled={loading} className="h-11">Reset</Button>
+   461→            </motion.div>
+   462→
+   463→            <div className="rounded-lg border border-dashed bg-muted/30 p-3">
+   464→              <div className="flex items-start gap-2 text-xs text-muted-foreground">
+   465→                <Shield className="h-3.5 w-3.5 mt-0.5 text-emerald-500 shrink-0" />
+   466→                <p>Uses a <strong>500-patient synthetic dataset</strong> (Pima Indians / Kaggle). <strong>Not a diagnosis.</strong></p>
+   467→              </div>
+   468→            </div>
+   469→          </div>
+   470→
+   471→          {/* ============ RIGHT PANEL: RESULTS ============ */}
+   472→          <div ref={resultsRef} className="lg:col-span-7 space-y-5">
+   473→            {/* Loading skeletons */}
+   474→            {loading && (
+   475→              <div className="space-y-5">
+   476→                {[1, 2, 3].map(i => (
+   477→                  <Card key={i}><CardContent className="py-6 space-y-3">
+   478→                    <Skeleton className="h-5 w-48" />
+   479→                    <Skeleton className="h-32 w-full rounded-lg" />
+   480→                    <Skeleton className="h-4 w-3/4" />
+   481→                  </CardContent></Card>
+   482→                ))}
+   483→              </div>
+   484→            )}
+   485→
+   486→            {/* Error state */}
+   487→            {error && (
+   488→              <motion.div {...fadeIn}>
+   489→                <Card className="border-red-200 bg-red-50">
+   490→                  <CardContent className="py-4 flex items-center gap-3">
+   491→                    <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+   492→                    <div>
+   493→                      <p className="text-sm font-medium text-red-800">Prediction Failed</p>
+   494→                      <p className="text-xs text-red-600 mt-0.5">{error}</p>
+   495→                    </div>
+   496→                  </CardContent>
+   497→                </Card>
+   498→              </motion.div>
+   499→            )}
+   500→
+   501→            {/* Empty state */}
+   502→            {!loading && !error && !result && (
+   503→              <motion.div {...fadeIn}>
+   504→                <Card className="border-dashed">
+   505→                  <CardContent className="py-16 flex flex-col items-center text-center">
+   506→                    <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
+   507→                      <Search className="h-7 w-7 text-emerald-400" />
+   508→                    </div>
+   509→                    <p className="text-sm font-medium text-muted-foreground">No Results Yet</p>
+   510→                    <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+   511→                      Enter health metrics, select your city, and click Run Prediction.
+   512→                    </p>
+   513→                  </CardContent>
+   514→                </Card>
+   515→              </motion.div>
+   516→            )}
+   517→
+   518→            {/* ========== RESULTS ========== */}
+   519→            <AnimatePresence>
+   520→              {result && !loading && (
+   521→                <motion.div key="r" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+   522→
+   523→                  {/* RISK ASSESSMENT CARD */}
+   524→                  <Card className={rc?.bg + " border-2"}>
+   525→                    <CardHeader className="pb-3">
+   526→                      <div className="flex items-center justify-between">
+   527→                        <CardTitle className="flex items-center gap-2 text-base">
+   528→                          <TrendingUp className="h-4 w-4" />Risk Assessment
+   529→                        </CardTitle>
+   530→                        <Badge className={rc?.badge + " border text-xs font-semibold px-3 py-1"}>{rc?.label}</Badge>
+   531→                      </div>
+   532→                    </CardHeader>
+   533→                    <CardContent className="space-y-4">
+   534→                      <div className="flex items-center gap-4">
+   535→                        {rc?.icon}
+   536→                        <div className="flex-1">
+   537→                          <p className={"text-sm font-medium " + rc?.color}>{rc?.desc}</p>
+   538→                          <p className="text-xs text-muted-foreground mt-0.5">
+   539→                            Confidence: <span className="font-semibold text-foreground">{(result.risk.risk_score * 100).toFixed(1)}%</span>
+   540→                            {" \u00B7 "}
+   541→                            Location: <span className="font-medium">{result.user_profile.location}</span>
+   542→                          </p>
+   543→                        </div>
+   544→                      </div>
+   545→                      <div className="space-y-2">
+   546→                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Risk Probability</p>
+   547→                        {(["low", "moderate", "high"] as const).map(t => {
+   548→                          const p = result.risk.risk_probability[t] * 100;
+   549→                          const cfg = getRiskCfg(t);
+   550→                          return (
+   551→                            <div key={t} className="space-y-1">
+   552→                              <div className="flex justify-between text-xs">
+   553→                                <span className="font-medium">{cfg.label}</span>
+   554→                                <span className="tabular-nums font-semibold">{p.toFixed(1)}%</span>
+   555→                              </div>
+   556→                              <div className="h-2.5 bg-black/5 rounded-full overflow-hidden">
+   557→                                <motion.div initial={{ width: 0 }} animate={{ width: p + "%" }}
+   558→                                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+   559→                                  className={"h-full rounded-full " + cfg.bar} />
+   560→                              </div>
+   561→                            </div>
+   562→                          );
+   563→                        })}
+   564→                      </div>
+   565→                      <Separator />
+   566→                      <div>
+   567→                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Top Risk Factors</p>
+   568→                        <div className="space-y-1.5">
+   569→                          {Object.entries(result.risk.feature_importance).slice(0, 5).map(([f, imp], i) => (
+   570→                            <div key={f} className="flex items-center gap-2">
+   571→                              <span className="text-xs text-muted-foreground w-5 text-right">{i + 1}.</span>
+   572→                              <div className="flex-1 h-1.5 bg-black/5 rounded-full overflow-hidden">
+   573→                                <motion.div initial={{ width: 0 }}
+   574→                                  animate={{ width: Math.min(imp * 300, 100) + "%" }}
+   575→                                  transition={{ duration: 0.6, delay: 0.3 + i * 0.05 }}
+   576→                                  className="h-full bg-gray-400 rounded-full" />
+   577→                              </div>
+   578→                              <span className="text-xs font-medium w-36 truncate">
+   579→                                {f.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+   580→                              </span>
+   581→                              <span className="text-[10px] text-muted-foreground tabular-nums w-10 text-right">
+   582→                                {(imp * 100).toFixed(1)}%
+   583→                              </span>
+   584→                            </div>
+   585→                          ))}
+   586→                        </div>
+   587→                      </div>
+   588→                    </CardContent>
+   589→                  </Card>
+   590→
+   591→                  {/* COMPARATIVE PATIENT ANALYSIS - SIDE BY SIDE GRID */}
+   592→                  <Card className="border shadow-sm">
+   593→                    <CardHeader className="pb-3">
+   594→                      <CardTitle className="flex items-center gap-2 text-base">
+   595→                        <ShieldCheck className="h-4 w-4 text-blue-600" />Comparative Patient Analysis
+   596→                      </CardTitle>
+   597→                      <CardDescription>
+   598→                        Side-by-side comparison of your health profile vs. the 2 most similar historical cases.
+   599→                      </CardDescription>
+   600→                    </CardHeader>
+   601→                    <CardContent className="space-y-4">
+   602→                      {/* Comparison Table */}
+   603→                      <div className="overflow-x-auto -mx-4 px-4">
+   604→                        <table className="w-full text-sm border-collapse">
+   605→                          <thead>
+   606→                            <tr className="border-b-2">
+   607→                              <th className="text-left py-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Metric</th>
+   608→                              <th className="text-center py-2 px-2 text-xs font-semibold text-emerald-700 uppercase tracking-wider bg-emerald-50/50 rounded-t-lg">
+   609→                                <div className="flex flex-col items-center"><User className="h-3.5 w-3.5 mb-0.5" /><span>You</span></div>
+   610→                              </th>
+   611→                              {result.historical_matches.map((m, idx) => {
+   612→                                const mc = getRiskCfg(m.risk_level);
+   613→                                return (
+   614→                                  <th key={m.patient_id}
+   615→                                    className={"text-center py-2 px-2 text-xs font-semibold uppercase tracking-wider rounded-t-lg " + mc.color}
+   616→                                    style={{ backgroundColor: mc.bg.includes("red") ? "rgba(239,68,68,0.05)" : mc.bg.includes("amber") ? "rgba(245,158,11,0.05)" : "rgba(16,185,129,0.05)" }}>
+   617→                                    <div className="flex flex-col items-center">
+   618→                                      <Badge variant="outline" className="text-[9px] font-mono mb-0.5">{m.patient_id}</Badge>
+   619→                                      <span>{(m.similarity_score * 100).toFixed(1)}% match</span>
+   620→                                    </div>
+   621→                                  </th>
+   622→                                );
+   623→                              })}
+   624→                            </tr>
+   625→                          </thead>
+   626→                          <tbody>
+   627→                            {[
+   628→                              { label: "Age", unit: "yr", uVal: result.user_profile.age, pVals: result.historical_matches.map(m => m.profile.age), norm: [18, 65] as [number, number] },
+   629→                              { label: "BMI", unit: "", uVal: result.user_profile.bmi, pVals: result.historical_matches.map(m => m.profile.bmi), norm: [18.5, 24.9] as [number, number] },
+   630→                              { label: "BP", unit: "mmHg", uVal: null, uStr: result.user_profile.blood_pressure, pVals: null, pStrs: result.historical_matches.map(m => m.profile.blood_pressure), norm: null },
+   631→                              { label: "Glucose", unit: "mg/dL", uVal: result.user_profile.glucose, pVals: result.historical_matches.map(m => m.profile.glucose), norm: [70, 100] as [number, number] },
+   632→                              { label: "Cholesterol", unit: "mg/dL", uVal: result.user_profile.cholesterol, pVals: result.historical_matches.map(m => m.profile.cholesterol), norm: [100, 200] as [number, number] },
+   633→                              { label: "Heart Rate", unit: "bpm", uVal: result.user_profile.heart_rate, pVals: result.historical_matches.map(m => m.profile.heart_rate), norm: [60, 100] as [number, number] },
+   634→                            ].map((row, ri) => (
+   635→                              <tr key={row.label} className={ri % 2 === 0 ? "bg-muted/20" : ""}>
+   636→                                <td className="py-2 px-2 font-medium text-xs">{row.label} <span className="text-muted-foreground">{row.unit}</span></td>
+   637→                                <td className="py-2 px-2 text-center font-semibold text-emerald-700 text-xs">
+   638→                                  {row.uStr ?? (row.uVal !== null ? row.uVal : "")}
+   639→                                </td>
+   640→                                {result.historical_matches.map((m, mi) => {
+   641→                                  const cellStr = row.pStrs ? row.pStrs[mi] : (row.pVals ? String(row.pVals[mi]) : "");
+   642→                                  return <td key={mi} className="py-2 px-2 text-center text-xs font-medium">{cellStr}</td>;
+   643→                                })}
+   644→                              </tr>
+   645→                            ))}
+   646→                            {/* Risk Level row */}
+   647→                            <tr className="border-t-2">
+   648→                              <td className="py-2.5 px-2 font-semibold text-xs">Risk Level</td>
+   649→                              <td className="py-2.5 px-2 text-center">
+   650→                                <Badge className={rc?.badge + " border text-[10px]"}>{rc?.label}</Badge>
+   651→                              </td>
+   652→                              {result.historical_matches.map((m, mi) => {
+   653→                                const mc = getRiskCfg(m.risk_level);
+   654→                                return (
+   655→                                  <td key={mi} className="py-2.5 px-2 text-center">
+   656→                                    <Badge className={mc.badge + " border text-[10px]"}>{mc.label}</Badge>
+   657→                                </td>
+   658→                              );
+   659→                              })}
+   660→                            </tr>
+   661→                            {/* Diagnosis row */}
+   662→                            <tr className="bg-muted/20">
+   663→                              <td className="py-2.5 px-2 font-semibold text-xs">Diagnosis</td>
+   664→                              <td className="py-2.5 px-2 text-center text-xs text-muted-foreground italic">Awaiting assessment</td>
+   665→                              {result.historical_matches.map((m, mi) => (
+   666→                                <td key={mi} className="py-2.5 px-2 text-center text-xs max-w-[140px]">{m.diagnosis}</td>
+   667→                              ))}
+   668→                            </tr>
+   669→                          </tbody>
+   670→                        </table>
+   671→                      </div>
+   672→
+   673→                      {/* Overlapping Traits Badges */}
+   674→                      {result.historical_matches.map((m, idx) => (
+   675→                        <div key={m.patient_id} className="rounded-lg border p-3 bg-muted/20">
+   676→                          <div className="flex items-center gap-2 mb-2">
+   677→                            <Badge variant="outline" className="text-[10px] font-mono">{m.patient_id}</Badge>
+   678→                            <span className="text-xs font-medium">Overlapping Traits</span>
+   679→                            <span className="text-[10px] text-muted-foreground ml-auto">{(m.similarity_score * 100).toFixed(1)}% similarity</span>
+   680→                          </div>
+   681→                          {m.overlapping_traits.length > 0 ? (
+   682→                            <div className="flex flex-wrap gap-1.5">
+   683→                              {m.overlapping_traits.map(t => (
+   684→                                <Badge key={t.trait} variant="secondary"
+   685→                                  className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border-emerald-200">
+   686→                                  {t.trait}: <span className="font-semibold">{t.user_value}</span> vs {t.patient_value}
+   687→                                  <span className="text-emerald-500 ml-0.5">({t.deviation_pct}% dev)</span>
+   688→                                </Badge>
+   689→                              ))}
+   690→                            </div>
+   691→                          ) : (
+   692→                            <p className="text-xs text-muted-foreground">No closely overlapping traits detected.</p>
+   693→                          )}
+   694→                          {/* Clinical Progression */}
+   695→                          <div className="mt-2 pt-2 border-t">
+   696→                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Clinical Progression</p>
+   697→                            <p className="text-xs leading-relaxed text-gray-600">{m.historical_progression}</p>
+   698→                          </div>
+   699→                        </div>
+   700→                      ))}
+   701→                    </CardContent>
+   702→                  </Card>
+   703→
+   704→                  {/* CONDITIONAL CARE GUIDANCE - HIGH RISK EMERGENCY */}
+   705→                  {result.care_guidance.emergency_escalation && (
+   706→                    <motion.div {...fadeIn} transition={{ delay: 0.2 }}>
+   707→                      <Card className="border-2 border-red-300 bg-red-50">
+   708→                        <CardHeader className="pb-3">
+   709→                          <CardTitle className="flex items-center gap-2 text-base text-red-800">
+   710→                            <AlertOctagon className="h-4 w-4" />Immediate Medical Attention Required
+   711→                          </CardTitle>
+   712→                        </CardHeader>
+   713→                        <CardContent className="space-y-3">
+   714→                          <p className="text-sm text-red-700 font-medium">{result.care_guidance.message}</p>
+   715→                          <div className="space-y-2">
+   716→                            {result.care_guidance.actions?.map((a, i) => (
+   717→                              <div key={i} className="flex items-start gap-2 text-sm">
+   718→                                <Cross className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+   719→                                <span>{a}</span>
+   720→                              </div>
+   721→                            ))}
+   722→                          </div>
+   723→                          <div className="mt-3 rounded-lg bg-red-100/60 border border-red-200 p-3">
+   724→                            <p className="text-xs text-red-700 font-semibold flex items-center gap-1.5">
+   725→                              <AlertTriangle className="h-3.5 w-3.5" />
+   726→                              OTC medications and self-treatment are NOT recommended for high-risk results.
+   727→                              Please seek immediate professional medical care.
+   728→                            </p>
+   729→                          </div>
+   730→                        </CardContent>
+   731→                      </Card>
+   732→                    </motion.div>
+   733→                  )}
+   734→
+   735→                  {/* CONDITIONAL CARE GUIDANCE - MODERATE OTC */}
+   736→                  {result.care_guidance.show_medications && result.care_guidance.care_guides && (
+   737→                    <motion.div {...fadeIn} transition={{ delay: 0.2 }}>
+   738→                      <Card className="border-2 border-amber-200 bg-amber-50/50">
+   739→                        <CardHeader className="pb-3">
+   740→                          <CardTitle className="flex items-center gap-2 text-base">
+   741→                            <ClipboardList className="h-4 w-4 text-amber-600" />Temporary Precautions & OTC Guidance
+   742→                          </CardTitle>
+   743→                          <CardDescription>For moderate risk \u2014 consult a doctor for sustained care.</CardDescription>
+   744→                        </CardHeader>
+   745→                        <CardContent className="space-y-3">
+   746→                          <p className="text-sm text-amber-800">{result.care_guidance.message}</p>
+   747→                          {result.care_guidance.care_guides.map((g, gi) => (
+   748→                            <div key={gi} className="rounded-lg border bg-white/60 p-4 space-y-3">
+   749→                              <button className="flex items-center justify-between w-full text-left"
+   750→                                onClick={() => setExpandedGuide(expandedGuide === gi ? null : gi)}>
+   751→                                <div className="flex items-center gap-2">
+   752→                                  <Pill className="h-4 w-4 text-amber-600" />
+   753→                                  <h4 className="text-sm font-semibold">{g.title}</h4>
+   754→                                </div>
+   755→                                {expandedGuide === gi
+   756→                                  ? <ChevronUp className="h-4 w-4" />
+   757→                                  : <ChevronDown className="h-4 w-4" />}
+   758→                              </button>
+   759→                              <AnimatePresence>
+   760→                                {expandedGuide === gi && (
+   761→                                  <motion.div initial={{ height: 0, opacity: 0 }}
+   762→                                    animate={{ height: "auto", opacity: 1 }}
+   763→                                    exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3">
+   764→                                    <div>
+   765→                                      <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-1.5">Precautions</p>
+   766→                                      {g.precautions.map((p, i) => (
+   767→                                        <div key={i} className="flex items-start gap-2 text-xs text-gray-700">
+   768→                                          <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0 mt-0.5" />
+   769→                                          <span>{p}</span>
+   770→                                        </div>
+   771→                                      ))}
+   772→                                    </div>
+   773→                                    <div>
+   774→                                      <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1.5">OTC Supplements</p>
+   775→                                      {g.otc_guidance.map((o, i) => (
+   776→                                        <div key={i} className="flex items-start gap-2 text-xs text-gray-700">
+   777→                                          <Syringe className="h-3 w-3 text-blue-500 shrink-0 mt-0.5" />
+   778→                                          <span>{o}</span>
+   779→                                        </div>
+   780→                                      ))}
+   781→                                    </div>
+   782→                                    <div>
+   783→                                      <p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-1.5">Avoid</p>
+   784→                                      {g.avoid.map((a, i) => (
+   785→                                        <div key={i} className="flex items-start gap-2 text-xs text-gray-700">
+   786→                                          <AlertTriangle className="h-3 w-3 text-red-500 shrink-0 mt-0.5" />
+   787→                                          <span>{a}</span>
+   788→                                        </div>
+   789→                                      ))}
+   790→                                    </div>
+   791→                                  </motion.div>
+   792→                                )}
+   793→                              </AnimatePresence>
+   794→                            </div>
+   795→                          ))}
+   796→                          {result.care_guidance.disclaimer && (
+   797→                            <p className="text-xs text-amber-600 italic border-t pt-2">{result.care_guidance.disclaimer}</p>
+   798→                          )}
+   799→                        </CardContent>
+   800→                      </Card>
+   801→                    </motion.div>
+   802→                  )}
+   803→
+   804→                  {/* CONDITIONAL CARE GUIDANCE - LOW RISK */}
+   805→                  {!result.care_guidance.show_medications && !result.care_guidance.emergency_escalation && (
+   806→                    <motion.div {...fadeIn} transition={{ delay: 0.2 }}>
+   807→                      <Card className="border-emerald-200 bg-emerald-50/50">
+   808→                        <CardContent className="py-4">
+   809→                          <div className="flex items-center gap-3">
+   810→                            <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+   811→                            <div>
+   812→                              <p className="text-sm font-medium text-emerald-800">{result.care_guidance.message}</p>
+   813→                              {result.care_guidance.actions?.map((a, i) => (
+   814→                                <p key={i} className="text-xs text-emerald-700 mt-1">{a}</p>
+   815→                              ))}
+   816→                            </div>
+   817→                          </div>
+   818→                        </CardContent>
+   819→                      </Card>
+   820→                    </motion.div>
+   821→                  )}
+   822→
+   823→                  {/* HOSPITAL RECOMMENDATIONS */}
+   824→                  <Card className="border shadow-sm">
+   825→                    <CardHeader className="pb-3">
+   826→                      <CardTitle className="flex items-center gap-2 text-base">
+   827→                        <Building2 className="h-4 w-4 text-orange-600" />
+   828→                        Recommended Hospitals in {result.user_profile.location}
+   829→                      </CardTitle>
+   830→                      <CardDescription>Sorted by specialty match, quality, and proximity.</CardDescription>
+   831→                    </CardHeader>
+   832→                    <CardContent className="space-y-3">
+   833→                      {result.recommended_hospitals.slice(0, 4).map((h, i) => (
+   834→                        <motion.div key={h.id} initial={{ opacity: 0, y: 10 }}
+   835→                          animate={{ opacity: 1, y: 0 }}
+   836→                          transition={{ duration: 0.3, delay: 0.1 + i * 0.06 }}>
+   837→                          <Card className="border hover:shadow-md transition-shadow">
+   838→                            <CardContent className="py-3 px-4">
+   839→                              <div className="flex items-start justify-between gap-3">
+   840→                                <div className="flex-1 min-w-0">
+   841→                                  <div className="flex items-center gap-2 mb-1">
+   842→                                    {i === 0 && <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px]">Best Match</Badge>}
+   843→                                    <h4 className="text-sm font-semibold truncate">{h.name}</h4>
+   844→                                  </div>
+   845→                                  <div className="flex flex-wrap gap-1 mb-1.5">
+   846→                                    {h.matched_specialties.map(s => (
+   847→                                      <Badge key={s} variant="secondary"
+   848→                                        className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border-emerald-200">{s}</Badge>
+   849→                                    ))}
+   850→                                  </div>
+   851→                                  {h.doctors.length > 0 && (
+   852→                                    <p className="text-xs text-muted-foreground mb-1.5">{h.doctors.join(" | ")}</p>
+   853→                                  )}
+   854→                                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+   855→                                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{h.city}, {h.state}</span>
+   856→                                    <span className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-500" />{h.rating}/5</span>
+   857→                                    <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{h.beds} beds</span>
+   858→                                    {h.emergency && (
+   859→                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-red-600 border-red-200">24/7 ER</Badge>
+   860→                                    )}
+   861→                                  </div>
+   862→                                </div>
+   863→                                <div className="text-right shrink-0">
+   864→                                  <div className="text-lg font-bold tabular-nums text-emerald-600">
+   865→                                    {(h.match_score * 100).toFixed(0)}%
+   866→                                  </div>
+   867→                                  <div className="text-[10px] text-muted-foreground">match</div>
+   868→                                </div>
+   869→                              </div>
+   870→                              <div className="mt-2 pt-2 border-t flex items-center justify-between text-xs text-muted-foreground">
+   871→                                <span className="flex items-center gap-1 truncate max-w-[60%]">
+   872→                                  <MapPin className="h-3 w-3 shrink-0" />{h.address}
+   873→                                </span>
+   874→                                <span className="flex items-center gap-1 shrink-0">
+   875→                                  <Phone className="h-3 w-3" />{h.phone}
+   876→                                </span>
+   877→                              </div>
+   878→                            </CardContent>
+   879→                          </Card>
+   880→                        </motion.div>
+   881→                      ))}
+   882→                    </CardContent>
+   883→                  </Card>
+   884→
+   885→                  {/* AI SUMMARY */}
+   886→                  {result.ai_summary && (
+   887→                    <motion.div {...fadeIn} transition={{ delay: 0.3 }}>
+   888→                      <Card className="border-2 border-violet-200 bg-violet-50/40">
+   889→                        <CardHeader className="pb-3">
+   890→                          <CardTitle className="flex items-center gap-2 text-base">
+   891→                            <Sparkles className="h-4 w-4 text-violet-600" />AI Health Summary
+   892→                          </CardTitle>
+   893→                          <CardDescription>Generated by Google Gemini.</CardDescription>
+   894→                        </CardHeader>
+   895→                        <CardContent>
+   896→                          <div className="prose prose-sm max-w-none text-gray-700 bg-white/70 rounded-lg p-4 border whitespace-pre-wrap text-xs leading-relaxed">
+   897→                            {result.ai_summary}
+   898→                          </div>
+   899→                        </CardContent>
+   900→                      </Card>
+   901→                    </motion.div>
+   902→                  )}
+   903→
+   904→                </motion.div>
+   905→              )}
+   906→            </AnimatePresence>
+   907→          </div>
+   908→        </div>
+   909→      </main>
+   910→
+   911→      <footer className="border-t bg-white/60 mt-auto">
+   912→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+   913→          <p>HealthPredict AI \u2014 Not a medical diagnosis.</p>
+   914→          <p>Scikit-Learn + FastAPI + Next.js</p>
+   915→        </div>
+   916→      </footer>
+   917→    </div>
+   918→    </TooltipProvider>
+   919→  );
+   920→}

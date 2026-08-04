@@ -231,7 +231,7 @@ export default function Page() {
                 <Search className="h-5 w-5 mr-2" />Start Health Assessment
               </Button>
               <Button size="lg" variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 h-12 text-base px-8"
+                className="border-emerald-400/50 text-emerald-400 hover:bg-emerald-400/10 h-12 text-base px-8"
                 onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}>
                 Learn More <ChevronDown className="h-4 w-4 ml-1" />
               </Button>
