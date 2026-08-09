@@ -30,7 +30,7 @@ import AIChatbotWidget from "@/components/AIChatbotWidget";
 import AuthModal, { AuthUser } from "@/components/AuthModal";
 import ClinicalHistoryModal, { RiskAssessmentRecord, SavedAppointmentRecord } from "@/components/ClinicalHistoryModal";
 import { getUserDatabase, saveUserDatabase, ChatRecord } from "@/lib/userDatabase";
-import { saveNeonRiskReport, saveNeonAppointment, fetchNeonUserHistory, neonSignInWithGoogle, neonSignInWithEmail } from "@/lib/neonClient";
+import { saveNeonRiskReport, saveNeonAppointment, fetchNeonUserHistory, neonSignInWithGoogle, neonSignInWithEmail, saveNeonChatTranscript } from "@/lib/neonClient";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -219,101 +219,102 @@ function RiskGauge({ score, tier }: { score: number; tier: string }) {
 /* ================================================================== */
 function ClinicalFooter({ setView, t }: { setView?: (v: "landing" | "app") => void; t: (k: keyof typeof TRANSLATIONS.en) => string }) {
   return (
-    <footer className="border-t border-white/10 bg-[#080E18] text-slate-300 text-xs pt-16 pb-12 print:hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-          {/* Col 1: Brand & Mission */}
-          <div className="md:col-span-4 space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-900/30">
-                <Stethoscope className="h-5 w-5 text-white" />
+    <footer className="bg-[#EAECE9] py-4 px-4 sm:px-6 lg:px-8 print:hidden">
+      <div className="max-w-7xl mx-auto">
+        <div className="clinical-card bg-white rounded-2xl p-4 sm:p-6 shadow-md border border-neutral-200/35 space-y-4">
+          
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            {/* Col 1: Brand & Mission */}
+            <div className="md:col-span-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-[#181818] flex items-center justify-center shadow-sm">
+                  <Stethoscope className="h-4.5 w-4.5 brand-stethoscope-icon text-[#10b981]" />
+                </div>
+                <span className="font-bold text-base text-[#1A1816] tracking-tight">{t("nav_title")}</span>
               </div>
-              <span className="font-bold text-lg text-white tracking-tight">{t("nav_title")}</span>
+              <p className="text-slate-400 text-[11px] leading-relaxed max-w-sm">
+                {t("hero_desc")}
+              </p>
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                <Badge variant="outline" className="border-emerald-500/30 text-emerald-300 bg-emerald-500/10 text-[9px] py-0 px-2 h-5 flex items-center">
+                  <CheckCircle2 className="h-2.5 w-2.5 mr-1 text-emerald-400" /> AP Health Network Verified
+                </Badge>
+                <Badge variant="outline" className="border-blue-500/30 text-blue-300 bg-blue-500/10 text-[9px] py-0 px-2 h-5 flex items-center">
+                  <ShieldCheck className="h-2.5 w-2.5 mr-1 text-blue-400" /> 108 Emergency Escalation
+                </Badge>
+              </div>
             </div>
-            <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
-              {t("hero_desc")}
+
+            {/* Col 2: Quick Links */}
+            <div className="md:col-span-3 space-y-2">
+              <h4 className="font-bold text-slate-100 text-[10px] uppercase tracking-wider text-amber-400">Clinical Navigation</h4>
+              <ul className="space-y-1 text-slate-300 text-[11px]">
+                <li><button onClick={() => setView?.("app")} className="bg-[#181818] text-white px-2.5 py-1 rounded-full text-[10px] font-bold transition-all inline-flex items-center gap-1 cursor-pointer"><ChevronRight className="h-2.5 w-2.5 text-white" /> {t("nav_launch")}</button></li>
+                <li><a href="#bento" className="hover:text-blue-400 transition-colors flex items-center gap-1"><ChevronRight className="h-2.5 w-2.5 text-slate-500" /> KNN Similarity Engine</a></li>
+                <li><a href="#med-checker" className="hover:text-blue-400 transition-colors flex items-center gap-1"><ChevronRight className="h-2.5 w-2.5 text-slate-500" /> {t("med_checker_title")}</a></li>
+                <li><a href="#bento" className="hover:text-blue-400 transition-colors flex items-center gap-1"><ChevronRight className="h-2.5 w-2.5 text-slate-500" /> 33 AP Hospitals</a></li>
+                <li><a href="#about" className="hover:text-blue-400 transition-colors flex items-center gap-1"><ChevronRight className="h-2.5 w-2.5 text-slate-500" /> Emergency Guardrails (108 AP)</a></li>
+              </ul>
+            </div>
+
+            {/* Col 3: AP Coverage */}
+            <div className="md:col-span-3 space-y-2">
+              <h4 className="font-bold text-slate-100 text-[10px] uppercase tracking-wider text-blue-400">AP Regional Coverage</h4>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px] text-slate-400 font-medium">
+                <span className="flex items-center gap-1"><MapPin className="h-2.5 w-2.5 text-blue-400" /> Vijayawada</span>
+                <span className="flex items-center gap-1"><MapPin className="h-2.5 w-2.5 text-blue-400" /> Visakhapatnam</span>
+                <span className="flex items-center gap-1"><MapPin className="h-2.5 w-2.5 text-blue-400" /> Guntur</span>
+                <span className="flex items-center gap-1"><MapPin className="h-2.5 w-2.5 text-blue-400" /> Tirupati</span>
+                <span className="flex items-center gap-1"><MapPin className="h-2.5 w-2.5 text-blue-400" /> Kakinada</span>
+                <span className="flex items-center gap-1"><MapPin className="h-2.5 w-2.5 text-blue-400" /> Rajahmundry</span>
+                <span className="flex items-center gap-1"><MapPin className="h-2.5 w-2.5 text-blue-400" /> Nellore</span>
+                <span className="flex items-center gap-1"><MapPin className="h-2.5 w-2.5 text-blue-400" /> Kurnool</span>
+              </div>
+            </div>
+
+            {/* Col 4: Emergency */}
+            <div className="md:col-span-2 space-y-2">
+              <h4 className="font-bold text-[#0D0B09] text-[10px] uppercase tracking-wider">Emergency Helpline</h4>
+              <div className="space-y-1.5 text-[11px]">
+                <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/30">
+                  <div className="text-[9px] font-bold text-black uppercase" style={{ color: '#000000' }}>AP Emergency Line</div>
+                  <a href="tel:108" className="text-xs font-black text-black hover:underline flex items-center gap-1 mt-0.5" style={{ color: '#000000' }}>
+                    <Phone className="h-3 w-3 text-black" /> Call 108
+                  </a>
+                </div>
+                <div className="p-2 rounded-lg bg-[#EED4AC]/30 border border-[#0D0B09]/10">
+                  <div className="text-[9px] font-semibold text-[#0D0B09]/60 uppercase">AP Health Support</div>
+                  <div className="text-xs font-bold text-[#0D0B09] mt-0.5">+91 800 123 4567</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Clinical Disclaimer Banner */}
+          <div className="p-2.5 rounded-lg bg-[#ECECEB] border border-neutral-300/20 space-y-1">
+            <div className="flex items-center gap-1.5 text-amber-600 font-bold text-[10px]">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-yellow-500 disclaimer-warning-icon" /> Important Medical Disclaimer & Notice
+            </div>
+            <p className="text-[10px] text-slate-400 leading-relaxed">
+              {t("footer_legal")} HealthPredict AI is an educational clinical decision support tool designed for risk stratification using machine learning and nearest-neighbor matching. 
+              It is not a substitute for professional medical diagnosis, advice, or treatment. Always consult a qualified physician or healthcare provider regarding any biometric concerns or medical conditions. 
+              In the event of an acute medical emergency, immediately contact <strong className="text-black font-black" style={{ color: '#000000' }}>108 (Andhra Pradesh Emergency Services)</strong> or visit your nearest hospital emergency department.
             </p>
-            <div className="flex items-center gap-2 pt-1">
-              <Badge variant="outline" className="border-emerald-500/30 text-emerald-300 bg-emerald-500/10 text-[10px] py-0.5">
-                <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-400" /> AP Health Network Verified
-              </Badge>
-              <Badge variant="outline" className="border-blue-500/30 text-blue-300 bg-blue-500/10 text-[10px] py-0.5">
-                <ShieldCheck className="h-3 w-3 mr-1 text-blue-400" /> 108 Emergency Escalation
-              </Badge>
-            </div>
           </div>
 
-          {/* Col 2: Quick Links */}
-          <div className="md:col-span-3 space-y-3">
-            <h4 className="font-bold text-slate-100 text-xs uppercase tracking-wider text-amber-400">Clinical Navigation</h4>
-            <ul className="space-y-2 text-slate-300">
-              <li><button onClick={() => setView?.("app")} className="hover:text-blue-400 transition-colors flex items-center gap-1.5"><ChevronRight className="h-3 w-3 text-slate-500" /> {t("nav_launch")}</button></li>
-              <li><a href="#bento" className="hover:text-blue-400 transition-colors flex items-center gap-1.5"><ChevronRight className="h-3 w-3 text-slate-500" /> KNN Patient Similarity Engine</a></li>
-              <li><a href="#med-checker" className="hover:text-blue-400 transition-colors flex items-center gap-1.5"><ChevronRight className="h-3 w-3 text-slate-500" /> {t("med_checker_title")}</a></li>
-              <li><a href="#bento" className="hover:text-blue-400 transition-colors flex items-center gap-1.5"><ChevronRight className="h-3 w-3 text-slate-500" /> 33 Andhra Pradesh Hospitals</a></li>
-              <li><a href="#about" className="hover:text-blue-400 transition-colors flex items-center gap-1.5"><ChevronRight className="h-3 w-3 text-slate-500" /> Emergency Guardrails (108 AP)</a></li>
-            </ul>
-          </div>
-
-          {/* Col 3: AP Coverage */}
-          <div className="md:col-span-3 space-y-3">
-            <h4 className="font-bold text-slate-100 text-xs uppercase tracking-wider text-blue-400">AP Regional Coverage</h4>
-            <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-[11px] text-slate-400 font-medium">
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-blue-400" /> Vijayawada</span>
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-blue-400" /> Visakhapatnam</span>
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-blue-400" /> Guntur</span>
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-blue-400" /> Tirupati</span>
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-blue-400" /> Kakinada</span>
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-blue-400" /> Rajahmundry</span>
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-blue-400" /> Nellore</span>
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-blue-400" /> Kurnool</span>
-            </div>
-          </div>
-
-          {/* Col 4: Medical Helpline */}
-          <div className="md:col-span-2 space-y-3">
-            <h4 className="font-bold text-slate-100 text-xs uppercase tracking-wider text-rose-400">Emergency & Helpline</h4>
-            <div className="space-y-2 text-xs">
-              <div className="p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/30">
-                <div className="text-[10px] font-bold text-rose-300 uppercase">AP Emergency Line</div>
-                <a href="tel:108" className="text-sm font-black text-rose-200 hover:underline flex items-center gap-1.5 mt-0.5">
-                  <Phone className="h-3.5 w-3.5" /> Call 108
-                </a>
-              </div>
-              <div className="p-2.5 rounded-xl bg-[#121C2D] border border-white/10">
-                <div className="text-[10px] font-semibold text-slate-400 uppercase">AP Health Support</div>
-                <div className="text-xs font-bold text-slate-200 mt-0.5">+91 800 123 4567</div>
-              </div>
+          {/* Bottom Bar */}
+          <div className="pt-4 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-400">
+            <p>© 2026 HealthPredict AI — Andhra Pradesh Clinical Network. All rights reserved.</p>
+            <div className="flex items-center gap-3">
+              <a href="#about" className="hover:text-slate-900 transition-colors">Privacy Policy</a>
+              <span>•</span>
+              <a href="#about" className="hover:text-slate-900 transition-colors">Clinical Terms</a>
+              <span>•</span>
+              <a href="#about" className="hover:text-slate-900 transition-colors">Dataset Documentation</a>
             </div>
           </div>
 
         </div>
-
-        {/* Clinical Disclaimer Banner */}
-        <div className="p-4 rounded-xl bg-[#121C2D] border border-white/10 space-y-1.5">
-          <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
-            <AlertTriangle className="h-4 w-4 shrink-0" /> Important Medical Disclaimer & Notice
-          </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            {t("footer_legal")} HealthPredict AI is an educational clinical decision support tool designed for risk stratification using machine learning and nearest-neighbor matching. 
-            It is not a substitute for professional medical diagnosis, advice, or treatment. Always consult a qualified physician or healthcare provider regarding any biometric concerns or medical conditions. 
-            In the event of an acute medical emergency, immediately contact <strong>108 (Andhra Pradesh Emergency Services)</strong> or visit your nearest hospital emergency department.
-          </p>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-400">
-          <p>© 2026 HealthPredict AI — Andhra Pradesh Clinical Network. All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <a href="#about" className="hover:text-slate-200 transition-colors">Privacy Policy</a>
-            <span>•</span>
-            <a href="#about" className="hover:text-slate-200 transition-colors">Clinical Terms</a>
-            <span>•</span>
-            <a href="#about" className="hover:text-slate-200 transition-colors">Dataset Documentation</a>
-          </div>
-        </div>
-
       </div>
     </footer>
   );
@@ -490,6 +491,7 @@ export default function Page() {
   const [conversations, setConversations] = useState<ChatRecord[]>([]);
   const [medications, setMedications] = useState<string[]>([]);
   const [healthConditions, setHealthConditions] = useState<string[]>([]);
+  const [activeStoryIndex, setActiveStoryIndex] = useState(0);
 
   const openAuthModal = useCallback((mode: "signin" | "signup" = "signin") => {
     setAuthModalInitialMode(mode);
@@ -884,31 +886,32 @@ export default function Page() {
   if (view === "landing") {
     return (
       <TooltipProvider>
-      <div className="min-h-screen flex flex-col bg-[#0B1320] text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
+      <div className="min-h-screen flex flex-col bg-[#F4EBDD] text-[#0D0B09] font-sans selection:bg-[#1E3F20] selection:text-[#F4EBDD]">
         
         {/* TOP NAVIGATION BAR WITH MULTILINGUAL TOGGLE */}
-        <nav className="fixed top-0 w-full z-50 bg-[#0B1320]/90 backdrop-blur-xl border-b border-white/10">
+        <nav className="fixed top-0 w-full z-50 bg-[#F4EBDD]/90 backdrop-blur-xl border-b border-[#0D0B09]/10 text-[#0D0B09]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-900/30">
-                <Stethoscope className="h-5 w-5 text-white" />
+            <button onClick={() => { setView("landing"); setResult(null); }}
+              className="app-brand-btn flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#1E3F20] border border-transparent hover:opacity-90 text-white transition-all shadow-sm cursor-pointer text-left">
+              <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
+                <Stethoscope className="h-4.5 w-4.5 text-white" />
               </div>
-              <div>
-                <span className="font-bold text-xl tracking-tight text-white block leading-none">{t("nav_title")}</span>
-                <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">{t("nav_subtitle")}</span>
+              <div className="text-left">
+                <span className="text-xs font-bold text-white block leading-none">{t("nav_title")}</span>
+                <span className="text-[9px] text-white/70 font-semibold mt-0.5 block">{t("nav_subtitle")}</span>
               </div>
-            </div>
+            </button>
 
             <div className="flex items-center gap-3">
               {/* Multilingual Globe Dropdown Selector */}
               <div className="relative">
                 <button
                   onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#121C2D] border border-white/10 hover:border-blue-500/40 text-xs font-bold text-slate-200 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1E3F20] border border-transparent hover:opacity-90 text-xs font-bold text-white transition-all shadow-sm cursor-pointer"
                 >
-                  <Globe className="h-4 w-4 text-blue-400" />
+                  <Globe className="h-4 w-4 text-white" />
                   <span>{LANGUAGE_LIST.find(l => l.id === lang)?.label || "English"}</span>
-                  <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isLangDropdownOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-3.5 w-3.5 text-white/70 transition-transform ${isLangDropdownOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 <AnimatePresence>
@@ -918,7 +921,7 @@ export default function Page() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-48 rounded-xl bg-[#121C2D] border border-white/10 shadow-2xl p-1.5 z-50 backdrop-blur-2xl grid grid-cols-1 gap-1 max-h-72 overflow-y-auto"
+                      className="absolute right-0 mt-2 w-48 rounded-xl bg-[#F4EBDD] border border-[#0D0B09]/15 shadow-2xl p-1.5 z-50 backdrop-blur-2xl grid grid-cols-1 gap-1 max-h-72 overflow-y-auto"
                     >
                       {LANGUAGE_LIST.map((item) => (
                         <button
@@ -927,14 +930,14 @@ export default function Page() {
                             setLang(item.id);
                             setIsLangDropdownOpen(false);
                           }}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                             lang === item.id
-                              ? "bg-blue-600 text-white shadow-md shadow-blue-900/40"
-                              : "text-slate-300 hover:bg-[#0B1320] hover:text-white"
+                              ? "bg-[#1E3F20] text-[#F4EBDD] shadow-md"
+                              : "text-[#0D0B09]/80 hover:bg-[#EED4AC] hover:text-[#0D0B09]"
                           }`}
                         >
                           <span>{item.label}</span>
-                          <span className="text-[10px] text-slate-400 font-normal">({item.name})</span>
+                          <span className="text-[10px] text-[#0D0B09]/60 font-normal">({item.name})</span>
                         </button>
                       ))}
                     </motion.div>
@@ -948,17 +951,17 @@ export default function Page() {
                   <button
                     id="userProfileBtn"
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#121C2D] border border-blue-500/30 hover:border-blue-400 text-xs font-bold text-slate-100 transition-all shadow-sm"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1E3F20] border border-transparent hover:opacity-90 text-xs font-bold text-white transition-all shadow-sm cursor-pointer"
                   >
-                    <div className="h-6 w-6 rounded-full overflow-hidden border border-blue-400 shrink-0 bg-blue-600 flex items-center justify-center text-white text-[10px]">
+                    <div className="h-6 w-6 rounded-full overflow-hidden border border-white/20 shrink-0 bg-white/20 flex items-center justify-center text-white text-[10px] font-black">
                       {user.avatarUrl ? (
                         <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
                       ) : (
                         user.name.charAt(0).toUpperCase()
                       )}
                     </div>
-                    <span className="max-w-[100px] truncate">{user.name.split(" ")[0]}</span>
-                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isUserMenuOpen ? "rotate-180" : ""}`} />
+                    <span className="max-w-[100px] truncate text-white">{user.name.split(" ")[0]}</span>
+                    <ChevronDown className={`h-3.5 w-3.5 text-white/70 transition-transform ${isUserMenuOpen ? "rotate-180" : ""}`} />
                   </button>
 
                   <AnimatePresence>
@@ -968,11 +971,11 @@ export default function Page() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 mt-2 w-64 rounded-xl bg-[#121C2D] border border-white/10 shadow-2xl p-2 z-50 backdrop-blur-2xl space-y-1"
+                        className="absolute right-0 mt-2 w-64 rounded-xl bg-[#F4EBDD] border border-[#0D0B09]/15 shadow-2xl p-2 z-50 backdrop-blur-2xl space-y-1"
                       >
-                        <div className="px-3 py-2 border-b border-white/10">
-                          <p className="font-bold text-xs text-white truncate">{user.name}</p>
-                          <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
+                        <div className="px-3 py-2 border-b border-[#0D0B09]/10">
+                          <p className="font-bold text-xs text-[#0D0B09] truncate">{user.name}</p>
+                          <p className="text-[10px] text-[#0D0B09]/60 truncate">{user.email}</p>
                         </div>
 
                         <button
@@ -982,9 +985,9 @@ export default function Page() {
                             setIsHistoryModalOpen(true);
                             setIsUserMenuOpen(false);
                           }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-200 hover:bg-[#0B1320] hover:text-white transition-all"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#0D0B09]/80 hover:bg-[#EED4AC] hover:text-[#0D0B09] transition-all cursor-pointer"
                         >
-                          <History className="h-4 w-4 text-blue-400" />
+                          <History className="h-4 w-4 text-[#1E3F20]" />
                           <span>Saved Risk History ({historyRecords.length})</span>
                         </button>
 
@@ -995,17 +998,17 @@ export default function Page() {
                             setIsHistoryModalOpen(true);
                             setIsUserMenuOpen(false);
                           }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-200 hover:bg-[#0B1320] hover:text-white transition-all"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#0D0B09]/80 hover:bg-[#EED4AC] hover:text-[#0D0B09] transition-all cursor-pointer"
                         >
-                          <Calendar className="h-4 w-4 text-amber-400" />
+                          <Calendar className="h-4 w-4 text-amber-700" />
                           <span>Booked Appointments ({appointmentRecords.length})</span>
                         </button>
 
-                        <div className="border-t border-white/10 pt-1">
+                        <div className="border-t border-[#0D0B09]/10 pt-1">
                           <button
                             id="signOutBtn"
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-all"
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-rose-700 hover:bg-rose-500/10 transition-all cursor-pointer"
                           >
                             <LogOut className="h-4 w-4" />
                             <span>{t("auth_logout")}</span>
@@ -1025,9 +1028,9 @@ export default function Page() {
                       e.stopPropagation();
                       openAuthModal("signin");
                     }}
-                    className="border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-slate-200 hover:text-white font-bold text-xs h-9 rounded-xl px-3.5 flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                    className="border border-[#0D0B09]/20 bg-[#EED4AC] hover:bg-[#e3caa2] text-[#0D0B09] font-bold text-xs h-9 rounded-xl px-3.5 flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                   >
-                    <User className="h-3.5 w-3.5 text-slate-400" />
+                    <User className="h-3.5 w-3.5 text-[#0D0B09]/60" />
                     <span>{t("auth_signin")}</span>
                   </button>
                   <button
@@ -1038,22 +1041,22 @@ export default function Page() {
                       e.stopPropagation();
                       openAuthModal("signup");
                     }}
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-9 rounded-xl px-3.5 flex items-center gap-1.5 shadow-md shadow-blue-900/40 transition-all cursor-pointer"
+                    className="bg-[#1E3F20] hover:bg-[#152e17] text-white font-bold text-xs h-9 rounded-xl px-3.5 flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
                   >
-                    <UserCheck className="h-3.5 w-3.5 text-blue-200" />
+                    <UserCheck className="h-3.5 w-3.5 text-[#F4EBDD]" />
                     <span>{t("auth_signup")}</span>
                   </button>
                 </div>
               )}
 
-              <Badge variant="outline" className="hidden md:inline-flex border-emerald-500/30 text-emerald-400 bg-emerald-500/10 px-3 py-1 text-xs font-medium">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse mr-2" />
+              <Badge className="hidden md:inline-flex bg-[#1E3F20] text-white border-transparent px-3 py-1 text-xs font-medium rounded-full shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-white animate-pulse mr-2" />
                 {t("nav_hospitals")}
               </Badge>
 
               <Button onClick={() => setView("app")}
-                className="bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-900/40 h-10 text-xs font-semibold px-4 rounded-xl transition-all">
-                {t("nav_launch")} <ChevronRight className="h-4 w-4 ml-1" />
+                className="bg-[#1E3F20] hover:bg-[#152e17] text-white shadow-md h-10 text-xs font-semibold px-5 rounded-full transition-all cursor-pointer">
+                {t("nav_launch")} <ChevronRight className="h-4 w-4 ml-1 text-white" />
               </Button>
             </div>
           </div>
@@ -1061,116 +1064,102 @@ export default function Page() {
 
         {/* HERO SECTION */}
         <motion.section style={{ opacity: heroOpacity }}
-          className="relative min-h-screen flex items-center justify-center pt-24 pb-16 px-4 overflow-hidden">
+          className="relative min-h-screen flex items-center justify-center pt-32 pb-24 px-4 overflow-hidden bg-gradient-to-b from-[#F4EBDD] to-[#EED4AC] text-[#0D0B09]">
           
-          {/* Doctor Consultation Backdrop - HIGHLIGHTED */}
-          <div className="absolute inset-0 z-0 overflow-hidden">
-            <Image
-              src="/hero_doctor_v2.png"
-              alt="Doctor with stethoscope and chart consulting patient in hospital bed"
-              fill
-              priority
-              quality={100}
-              unoptimized
-              sizes="100vw"
-              className="object-cover object-center scale-100 brightness-[1.05] contrast-[1.08] transition-all duration-700"
-            />
-            {/* Minimal Translucent Overlay — Ensures background image is brightly highlighted */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0B1320]/75 via-[#0B1320]/30 to-[#0B1320]/20" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1320] via-transparent to-[#0B1320]/40" />
+          <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
             
-            {/* Glowing Accent Highlights */}
-            <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-blue-500/15 blur-[100px] pointer-events-none animate-pulse" />
-            <div className="absolute bottom-10 left-10 w-[400px] h-[400px] rounded-full bg-teal-500/10 blur-[90px] pointer-events-none" />
-          </div>
+            {/* LEFT COLUMN: BADGE, HEADING, DESCRIPTION, AND CTAs */}
+            <div className="lg:col-span-7 flex flex-col items-start text-left space-y-8">
+              {/* Tag / Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EED4AC]/80 border border-[#0D0B09]/20 text-[#0D0B09] text-xs font-bold shadow-sm backdrop-blur-sm">
+                <Award className="h-3.5 w-3.5 text-[#0D0B09]" />
+                <span>{t("hero_badge")}</span>
+              </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* LEFT HERO TEXT & CTA WITH GLASS BACKDROP FOR HIGH CONTRAST */}
-            <div className="lg:col-span-7 text-left space-y-7 backdrop-blur-[2px] p-2 rounded-2xl">
-              <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-semibold mb-5 shadow-lg shadow-black/40 backdrop-blur-md">
-                  <Award className="h-3.5 w-3.5 text-amber-400" />
-                  <span>{t("hero_badge")}</span>
-                </div>
+              {/* Main heading */}
+              <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-black tracking-tight leading-[1.1] text-[#0D0B09] font-sans">
+                Your Health,
+                <span className="inline-block align-middle mx-3 my-1 w-24 sm:w-36 h-10 sm:h-16 rounded-full overflow-hidden border-2 sm:border-3 border-[#0D0B09] shadow-md relative bg-white shrink-0">
+                  <Image
+                    src="/hero_doctor_v2.png"
+                    alt="Doctor consulting patient"
+                    fill
+                    priority
+                    className="object-cover object-center"
+                  />
+                </span>
+                Predicted with Precision
+              </h1>
 
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)]">
-                  {t("hero_title_1")}<br />
-                  <span className="text-blue-400 drop-shadow-[0_2px_12px_rgba(14,165,233,0.5)]">
-                    {t("hero_title_2")}
-                  </span>
-                </h1>
-              </motion.div>
-
-              <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.15 }}
-                className="text-base sm:text-lg text-slate-100 max-w-xl leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              {/* Description */}
+              <p className="text-base sm:text-lg text-[#0D0B09]/80 max-w-xl leading-relaxed font-semibold">
                 {t("hero_desc")}
-              </motion.p>
+              </p>
 
-              {/* DYNAMIC STATS TICKERS */}
-              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.25 }}
-                className="grid grid-cols-3 gap-4 pt-1">
-                <div className="p-4 rounded-xl bg-[#121C2D] border border-white/10">
-                  <div className="text-2xl font-black text-blue-400">500+</div>
-                  <div className="text-[11px] font-semibold text-slate-400 mt-0.5">{t("stat_patients")}</div>
-                </div>
-                <div className="p-4 rounded-xl bg-[#121C2D] border border-white/10">
-                  <div className="text-2xl font-black text-amber-400">33</div>
-                  <div className="text-[11px] font-semibold text-slate-400 mt-0.5">{t("stat_hospitals")}</div>
-                </div>
-                <div className="p-4 rounded-xl bg-[#121C2D] border border-white/10">
-                  <div className="text-2xl font-black text-emerald-400">14</div>
-                  <div className="text-[11px] font-semibold text-slate-400 mt-0.5">{t("stat_cities")}</div>
-                </div>
-              </motion.div>
-
-              {/* HERO CTA BUTTONS */}
-              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.35 }}
-                className="flex flex-col sm:flex-row gap-4 pt-1">
-                <Button size="lg" onClick={() => setView("app")}
-                  className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/40 h-13 text-base font-bold px-8 rounded-xl transition-all">
-                  <Search className="h-5 w-5 mr-2" /> {t("btn_start")}
-                </Button>
-                <Button size="lg" variant="outline"
-                  className="border-slate-700 text-slate-200 hover:bg-slate-800/80 h-13 text-base font-medium px-7 rounded-xl"
-                  onClick={() => document.getElementById("bento")?.scrollIntoView({ behavior: "smooth" })}>
-                  {t("btn_explore")} <ChevronDown className="h-4 w-4 ml-1" />
-                </Button>
-              </motion.div>
+              {/* Action buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto pt-2">
+                <button
+                  onClick={() => setView("app")}
+                  className="bg-[#1E3F20] hover:bg-[#152e17] text-white font-bold text-base h-13 px-8 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Search className="h-5 w-5" />
+                  <span>{t("btn_start")}</span>
+                </button>
+                <button
+                  onClick={() => document.getElementById("bento")?.scrollIntoView({ behavior: "smooth" })}
+                  className="bg-[#181818] text-white hover:bg-[#181818]/90 font-bold text-base h-13 px-8 rounded-full transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>{t("btn_explore")}</span>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
-            {/* RIGHT HERO INTERACTIVE MOCK PREVIEW CARD */}
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="lg:col-span-5">
-              <div className="clinical-card rounded-2xl p-6 space-y-5 border border-white/10 relative">
-                <div className="absolute -top-3 right-6 bg-amber-600 text-white text-[10px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider shadow">
+            {/* RIGHT COLUMN: PERSISTENT STATISTICS BLOCK & INTERACTIVE CARD */}
+            <div className="lg:col-span-5 flex flex-col space-y-6 w-full">
+              
+              {/* Sticky/Fixed Stats cards (HopeRise palette) */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-[#EED4AC]/50 border border-[#EED4AC] rounded-2xl p-4 text-center transition-all duration-300 hover:border-[#0D0B09]/30 hover:bg-[#EED4AC]/70">
+                  <div className="text-2xl sm:text-3xl font-black text-[#0D0B09]">500+</div>
+                  <div className="text-[9px] sm:text-[10px] font-bold text-[#0D0B09]/60 uppercase tracking-wider mt-0.5">{t("stat_patients")}</div>
+                </div>
+                <div className="bg-[#EED4AC]/50 border border-[#EED4AC] rounded-2xl p-4 text-center transition-all duration-300 hover:border-[#0D0B09]/30 hover:bg-[#EED4AC]/70">
+                  <div className="text-2xl sm:text-3xl font-black text-[#0D0B09]">33</div>
+                  <div className="text-[9px] sm:text-[10px] font-bold text-[#0D0B09]/60 uppercase tracking-wider mt-0.5">{t("stat_hospitals")}</div>
+                </div>
+                <div className="bg-[#EED4AC]/50 border border-[#EED4AC] rounded-2xl p-4 text-center transition-all duration-300 hover:border-[#0D0B09]/30 hover:bg-[#EED4AC]/70">
+                  <div className="text-2xl sm:text-3xl font-black text-[#0D0B09]">14</div>
+                  <div className="text-[9px] sm:text-[10px] font-bold text-[#0D0B09]/60 uppercase tracking-wider mt-0.5">{t("stat_cities")}</div>
+                </div>
+              </div>
+
+              {/* Interactive Mock Preview Card */}
+              <div className="bg-[#EED4AC]/30 border border-[#EED4AC] rounded-3xl p-6 space-y-4 text-left text-[#0D0B09] shadow-sm relative w-full">
+                <div className="absolute -top-3 right-6 bg-[#0D0B09] text-white text-[10px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider shadow">
                   {t("sample_badge")}
                 </div>
                 
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center justify-between border-b border-[#0D0B09]/10 pb-3">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-5 w-5 text-blue-400" />
-                    <span className="font-bold text-sm text-slate-100">{t("sample_report")}</span>
+                    <ShieldCheck className="h-5 w-5 text-[#1E3F20]" />
+                    <span className="font-bold text-sm text-[#0D0B09]">{t("sample_report")}</span>
                   </div>
-                  <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/30 text-xs font-semibold">{t("sample_low")}</Badge>
+                  <Badge className="bg-[#1E3F20]/15 text-[#1E3F20] border-[#1E3F20]/30 text-xs font-semibold">{t("sample_low")}</Badge>
                 </div>
 
-                <div className="flex items-center gap-4 bg-[#0B1320] rounded-xl p-3.5 border border-white/10">
-                  <div className="relative flex items-center justify-center">
-                    <svg className="w-20 h-20 transform -rotate-90">
-                      <circle cx="40" cy="40" r="30" stroke="#1E293B" strokeWidth="6" fill="transparent" />
-                      <circle cx="40" cy="40" r="30" stroke="#059669" strokeWidth="6" strokeDasharray="188" strokeDashoffset="12" strokeLinecap="round" fill="transparent" />
+                <div className="flex items-center gap-4 bg-[#F4EBDD]/60 rounded-2xl p-3.5 border border-[#EED4AC]">
+                  <div className="relative flex items-center justify-center shrink-0">
+                    <svg className="w-16 h-16 transform -rotate-90">
+                      <circle cx="32" cy="32" r="24" stroke="#EED4AC" strokeWidth="5" fill="transparent" />
+                      <circle cx="32" cy="32" r="24" stroke="#1E3F20" strokeWidth="5" strokeDasharray="150" strokeDashoffset="10" strokeLinecap="round" fill="transparent" />
                     </svg>
-                    <span className="absolute font-black text-base text-slate-100">94%</span>
+                    <span className="absolute font-black text-sm text-[#0D0B09]">94%</span>
                   </div>
                   <div className="space-y-1 text-xs">
-                    <p className="font-bold text-slate-200">{t("sample_normal")}</p>
-                    <p className="text-slate-400">BP: 120/80 mmHg · Fasting Glucose: 95 mg/dL</p>
-                    <p className="text-emerald-400 font-semibold flex items-center gap-1">
+                    <p className="font-bold text-[#0D0B09]">{t("sample_normal")}</p>
+                    <p className="text-[#0D0B09]/75">BP: 120/80 mmHg · Fasting Glucose: 95 mg/dL</p>
+                    <p className="text-[#1E3F20] font-bold flex items-center gap-1">
                       <CheckCircle2 className="h-3 w-3" /> {t("sample_cardio")}
                     </p>
                   </div>
@@ -1178,38 +1167,38 @@ export default function Page() {
 
                 {/* Patient Similarity Proof Preview */}
                 <div className="space-y-2 text-xs">
-                  <p className="font-semibold text-slate-400 text-[11px] uppercase tracking-wider">{t("sample_matched")}</p>
-                  <div className="bg-[#0B1320] rounded-xl p-3 border border-white/10 flex items-center justify-between">
+                  <p className="font-bold text-[#0D0B09]/60 text-[10px] uppercase tracking-wider">{t("sample_matched")}</p>
+                  <div className="bg-[#F4EBDD]/60 rounded-2xl p-3 border border-[#EED4AC] flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-slate-200 text-xs">Patient P-1068 (Age 44, BP 118/78)</div>
-                      <div className="text-[11px] text-slate-400">Diagnosis: Normal Metabolic Function</div>
+                      <div className="font-bold text-[#0D0B09] text-xs">Patient P-1068 (Age 44, BP 118/78)</div>
+                      <div className="text-[11px] text-[#0D0B09]/70">Diagnosis: Normal Metabolic Function</div>
                     </div>
-                    <Badge variant="secondary" className="bg-amber-500/15 text-amber-300 border-amber-500/30 text-[10px]">
+                    <Badge variant="secondary" className="bg-[#0D0B09]/10 text-[#0D0B09] border-[#0D0B09]/20 text-[10px]">
                       {t("sample_match_pct")}
                     </Badge>
                   </div>
                 </div>
 
                 {/* Hospital Recommendation Preview */}
-                <div className="pt-2 border-t border-white/10 text-xs flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <Building2 className="h-3.5 w-3.5 text-blue-400" />
+                <div className="pt-2 border-t border-[#0D0B09]/10 text-xs flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[#0D0B09]">
+                    <Building2 className="h-3.5 w-3.5 text-[#1E3F20]" />
                     <span>Manipal Hospital, Vijayawada</span>
                   </div>
-                  <span className="text-amber-400 font-bold flex items-center gap-0.5">
-                    <Star className="h-3 w-3 fill-amber-400" /> 4.5/5
+                  <span className="text-[#0D0B09] font-bold flex items-center gap-0.5">
+                    <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> 4.5/5
                   </span>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
           </div>
         </motion.section>
 
         {/* REGIONAL HOSPITAL PARTNER TICKER */}
-        <section className="bg-[#0E1726] border-y border-white/5 py-4 overflow-hidden relative">
-          <div className="max-w-7xl mx-auto px-4 mb-2 flex items-center justify-between text-xs text-slate-400 font-semibold">
-            <span className="flex items-center gap-2 text-blue-400 uppercase tracking-wider text-[11px]">
+        <section className="bg-[#EED4AC]/30 border-y border-[#0D0B09]/10 py-4 overflow-hidden relative text-[#0D0B09]">
+          <div className="max-w-7xl mx-auto px-4 mb-2 flex items-center justify-between text-xs text-[#0D0B09]/75 font-semibold">
+            <span className="flex items-center gap-2 text-[#1E3F20] uppercase tracking-wider text-[11px]">
               <MapPinned className="h-3.5 w-3.5" /> {t("ticker_title")}
             </span>
             <span className="hidden sm:block text-[11px]">{t("ticker_count")}</span>
@@ -1218,12 +1207,12 @@ export default function Page() {
           <div className="flex overflow-hidden relative">
             <div className="animate-marquee flex items-center gap-6">
               {[...HOSPITAL_TICKER, ...HOSPITAL_TICKER].map((h, i) => (
-                <div key={i} className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-[#121C2D] border border-white/10 shrink-0 text-xs">
-                  <Building2 className="h-3.5 w-3.5 text-blue-400" />
-                  <span className="font-bold text-slate-200">{h.name}</span>
-                  <span className="text-slate-400">({h.city})</span>
-                  <span className="text-amber-400 font-medium text-[11px] flex items-center gap-0.5">
-                    <Star className="h-2.5 w-2.5 fill-amber-400" /> {h.rating}
+                <div key={i} className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-[#EED4AC]/40 border border-[#EED4AC] shrink-0 text-xs text-[#0D0B09]">
+                  <Building2 className="h-3.5 w-3.5 text-[#1E3F20]" />
+                  <span className="font-bold text-[#0D0B09]">{h.name}</span>
+                  <span className="text-[#0D0B09]/60">({h.city})</span>
+                  <span className="text-amber-600 font-medium text-[11px] flex items-center gap-0.5">
+                    <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" /> {h.rating}
                   </span>
                 </div>
               ))}
@@ -1232,13 +1221,13 @@ export default function Page() {
         </section>
 
         {/* BENTO GRID FEATURE CARDS */}
-        <section id="bento" className="py-20 px-4 max-w-7xl mx-auto w-full space-y-12">
+        <section id="bento" className="py-20 px-4 max-w-7xl mx-auto w-full space-y-12 text-[#0D0B09]">
           <div className="text-center space-y-3">
-            <Badge className="bg-blue-500/15 text-blue-300 border-blue-500/30 text-xs px-3.5 py-1">
+            <Badge className="bg-[#1E3F20]/10 text-[#1E3F20] border-[#1E3F20]/20 text-xs px-3.5 py-1">
               {t("bento_tag")}
             </Badge>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white">{t("bento_title")}</h2>
-            <p className="text-slate-400 max-w-xl mx-auto text-sm leading-relaxed">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0D0B09]">{t("bento_title")}</h2>
+            <p className="text-[#0D0B09]/70 max-w-xl mx-auto text-sm leading-relaxed">
               {t("bento_desc")}
             </p>
           </div>
@@ -1248,29 +1237,29 @@ export default function Page() {
             {/* Bento Card 1: Large ML Classifier */}
             <motion.div className="md:col-span-8 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4"
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <div className="h-12 w-12 rounded-xl bg-blue-500/15 flex items-center justify-center text-blue-400">
-                <Gauge className="h-6 w-6" />
+              <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                <Gauge className="h-6 w-6 text-blue-600" />
               </div>
-              <h3 className="text-xl font-bold text-white">{t("bento_1_title")}</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_1_title")}</h3>
+              <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
                 {t("bento_1_desc")}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
-                <div className="p-3 rounded-xl bg-[#0B1320] border border-white/10">
-                  <div className="text-slate-400">Glucose Weight</div>
-                  <div className="text-sm font-bold text-blue-400">24.5%</div>
+                <div className="p-3 rounded-xl bg-[#F4EBDD]/60 border border-[#0D0B09]/10">
+                  <div className="text-[#0D0B09]/60">Glucose Weight</div>
+                  <div className="text-sm font-bold text-blue-700">24.5%</div>
                 </div>
-                <div className="p-3 rounded-xl bg-[#0B1320] border border-white/10">
-                  <div className="text-slate-400">BMI Weight</div>
-                  <div className="text-sm font-bold text-emerald-400">15.3%</div>
+                <div className="p-3 rounded-xl bg-[#F4EBDD]/60 border border-[#0D0B09]/10">
+                  <div className="text-[#0D0B09]/60">BMI Weight</div>
+                  <div className="text-sm font-bold text-emerald-700">15.3%</div>
                 </div>
-                <div className="p-3 rounded-xl bg-[#0B1320] border border-white/10">
-                  <div className="text-slate-400">Systolic BP Weight</div>
-                  <div className="text-sm font-bold text-amber-400">14.8%</div>
+                <div className="p-3 rounded-xl bg-[#F4EBDD]/60 border border-[#0D0B09]/10">
+                  <div className="text-[#0D0B09]/60">Systolic BP Weight</div>
+                  <div className="text-sm font-bold text-amber-700">14.8%</div>
                 </div>
-                <div className="p-3 rounded-xl bg-[#0B1320] border border-white/10">
-                  <div className="text-slate-400">Cholesterol Weight</div>
-                  <div className="text-sm font-bold text-rose-400">13.0%</div>
+                <div className="p-3 rounded-xl bg-[#F4EBDD]/60 border border-[#0D0B09]/10">
+                  <div className="text-[#0D0B09]/60">Cholesterol Weight</div>
+                  <div className="text-sm font-bold text-rose-700">13.0%</div>
                 </div>
               </div>
             </motion.div>
@@ -1278,11 +1267,11 @@ export default function Page() {
             {/* Bento Card 2: KNN Similarity Proofs */}
             <motion.div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4"
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}>
-              <div className="h-12 w-12 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-400">
-                <Users className="h-6 w-6" />
+              <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                <Users className="h-6 w-6 text-amber-500" />
               </div>
-              <h3 className="text-xl font-bold text-white">{t("bento_2_title")}</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_2_title")}</h3>
+              <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
                 {t("bento_2_desc")}
               </p>
             </motion.div>
@@ -1290,11 +1279,11 @@ export default function Page() {
             {/* Bento Card 3: 33 AP Hospitals */}
             <motion.div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4"
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
-              <div className="h-12 w-12 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400">
+              <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-700">
                 <MapPinned className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-white">{t("bento_3_title")}</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_3_title")}</h3>
+              <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
                 {t("bento_3_desc")}
               </p>
             </motion.div>
@@ -1302,23 +1291,23 @@ export default function Page() {
             {/* Bento Card 4: 3-Tier Care Guardrails */}
             <motion.div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4"
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
-              <div className="h-12 w-12 rounded-xl bg-rose-500/15 flex items-center justify-center text-rose-400">
+              <div className="h-12 w-12 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-700">
                 <ClipboardList className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-white">{t("bento_4_title")}</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_4_title")}</h3>
+              <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
                 {t("bento_4_desc")}
               </p>
             </motion.div>
 
             {/* Bento Card 5: Medication Interaction Checker */}
-            <motion.div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4 border-2 border-teal-500/30"
+            <motion.div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4 border-2 border-[#1E3F20]/30"
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }}>
-              <div className="h-12 w-12 rounded-xl bg-teal-500/15 flex items-center justify-center text-teal-400">
+              <div className="h-12 w-12 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-700">
                 <Pill className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-white">{t("bento_6_title")}</h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_6_title")}</h3>
+              <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
                 {t("bento_6_desc")}
               </p>
             </motion.div>
@@ -1326,50 +1315,173 @@ export default function Page() {
           </div>
         </section>
 
+        {/* INSPIRING JOURNEYS OF STRENGTH AND HOPE STORIES SECTION */}
+        <section id="inspiring-journeys-section" className="bg-[#F4EBDD] py-24 px-4 border-t border-[#EED4AC] text-[#0D0B09]">
+          <div className="max-w-7xl mx-auto space-y-12">
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-[#0D0B09] font-sans">
+                Inspiring Journeys Of Strength And Hope
+              </h2>
+            </div>
+
+            {/* Stories card grid showing 3 items based on index */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  name: "Anjali Rao",
+                  age: 52,
+                  diagnosis: "Severe Coronary Artery Clot",
+                  story: "After an emergency warning and high risk prediction, Anjali received immediate clinical dispatch to Manipal Hospital. Following a successful angioplasty, she is back to her active morning walks.",
+                  image: "/patient_anjali.jpg"
+                },
+                {
+                  name: "Vikram Dev",
+                  age: 29,
+                  diagnosis: "Rehabilitated ACL Tear",
+                  story: "Vikram underwent joint-preservation surgery at Apollo Hospitals. A tailored 6-month clinical rehabilitation program restored his full knee strength, and he is back training for his next marathon.",
+                  image: "/patient_vikram.jpg"
+                },
+                {
+                  name: "Prasad Raju",
+                  age: 74,
+                  diagnosis: "Type 2 Diabetes & Hypertension",
+                  story: "Prasad leveraged HealthPredict AI to optimize his daily insulin schedules and track cardiovascular stress deviations. His HbA1c dropped from 8.4% to 6.2% in under three months.",
+                  image: "/patient_prasad.jpg"
+                },
+                {
+                  name: "Meera Nair",
+                  age: 41,
+                  diagnosis: "Post-Partum Preeclampsia",
+                  story: "Discharged safely after risk alerts flagged blood pressure anomalies, she recovered through customized tele-consultation followups via the HealthPredict AP clinical gateway.",
+                  image: "/patient_anjali.jpg"
+                },
+                {
+                  name: "Karthik Nair",
+                  age: 34,
+                  diagnosis: "Lumbar Disc Herniation",
+                  story: "Recovered knee and lower spine stability through targeted non-invasive decompression and guided physical therapy routing, avoiding complex surgical intervention.",
+                  image: "/patient_vikram.jpg"
+                }
+              ].slice(activeStoryIndex, activeStoryIndex + 3).map((item, idx) => (
+                <div
+                  key={idx}
+                  className="group relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-[#EED4AC] bg-neutral-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[#0D0B09]/20"
+                >
+                  {/* Grayscale hover to color image */}
+                  <Image
+                    src={item.image}
+                    alt={`${item.name} recovery photo`}
+                    fill
+                    priority
+                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500 ease-in-out"
+                  />
+
+                  {/* Absolute slide-in panel on hover */}
+                  <div className="absolute inset-x-0 bottom-0 bg-[#0D0B09]/95 text-[#F4EBDD] p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out flex flex-col justify-end min-h-[50%] backdrop-blur-sm">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-[#F4EBDD]/65 uppercase tracking-wider">
+                        <span>{item.diagnosis}</span>
+                        <span>{item.age} yrs</span>
+                      </div>
+                      <h3 className="text-lg font-black text-white leading-tight">
+                        {item.name}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-[#F4EBDD]/80 leading-relaxed font-medium mt-2">
+                      "{item.story}"
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Slider Navigation controls (dots & arrows) */}
+            <div className="flex flex-col items-center gap-6 pt-4">
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveStoryIndex((prev) => (prev > 0 ? prev - 1 : 2));
+                  }}
+                  className="h-10 w-10 rounded-full border border-[#0D0B09]/20 bg-transparent text-[#0D0B09] hover:bg-[#0D0B09] hover:text-[#F4EBDD] flex items-center justify-center transition-all duration-300 cursor-pointer animate-none"
+                  aria-label="Previous stories"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: 3 }).map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveStoryIndex(idx)}
+                      className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                        activeStoryIndex === idx
+                          ? "w-8 bg-[#0D0B09]"
+                          : "w-2 bg-[#0D0B09]/20 hover:bg-[#0D0B09]/45"
+                      }`}
+                      aria-label={`Go to story set ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveStoryIndex((prev) => (prev < 2 ? prev + 1 : 0));
+                  }}
+                  className="h-10 w-10 rounded-full border border-[#0D0B09]/20 bg-transparent text-[#0D0B09] hover:bg-[#0D0B09] hover:text-[#F4EBDD] flex items-center justify-center transition-all duration-300 cursor-pointer animate-none"
+                  aria-label="Next stories"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ABOUT US SECTION WITH HOSPITAL BUILDING IMAGE */}
-        <section id="about" className="py-20 px-4 border-t border-white/5 bg-[#0E1726]">
+        <section id="about" className="py-20 px-4 border-t border-[#0D0B09]/10 bg-[#EED4AC]/20 text-[#0D0B09]">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             <div className="lg:col-span-6 space-y-6">
-              <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/30 text-xs px-3.5 py-1">
+              <Badge className="bg-[#181818] text-white border-transparent text-xs px-3.5 py-1.5 rounded-full">
                 {t("about_tag")}
               </Badge>
-              <h2 className="text-3xl sm:text-4xl font-black text-white">{t("about_title")}</h2>
-              <p className="text-slate-300 leading-relaxed text-sm">
+              <h2 className="text-3xl sm:text-4xl font-black text-[#0D0B09]">{t("about_title")}</h2>
+              <p className="text-[#0D0B09]/80 leading-relaxed text-sm font-medium">
                 {t("about_desc")}
               </p>
               <div className="grid grid-cols-2 gap-4 text-xs font-semibold pt-1">
-                <div className="flex items-center gap-2 text-slate-200">
-                  <CheckCircle2 className="h-4 w-4 text-blue-400" /> {t("about_1")}
+                <div className="flex items-center gap-2 text-[#0D0B09]">
+                  <CheckCircle2 className="h-4 w-4 text-[#1E3F20]" /> {t("about_1")}
                 </div>
-                <div className="flex items-center gap-2 text-slate-200">
-                  <CheckCircle2 className="h-4 w-4 text-blue-400" /> {t("about_2")}
+                <div className="flex items-center gap-2 text-[#0D0B09]">
+                  <CheckCircle2 className="h-4 w-4 text-[#1E3F20]" /> {t("about_2")}
                 </div>
-                <div className="flex items-center gap-2 text-slate-200">
-                  <CheckCircle2 className="h-4 w-4 text-blue-400" /> {t("about_3")}
+                <div className="flex items-center gap-2 text-[#0D0B09]">
+                  <CheckCircle2 className="h-4 w-4 text-[#1E3F20]" /> {t("about_3")}
                 </div>
-                <div className="flex items-center gap-2 text-slate-200">
-                  <CheckCircle2 className="h-4 w-4 text-blue-400" /> {t("about_4")}
+                <div className="flex items-center gap-2 text-[#0D0B09]">
+                  <CheckCircle2 className="h-4 w-4 text-[#1E3F20]" /> {t("about_4")}
                 </div>
               </div>
-              <Button size="lg" onClick={() => setView("app")}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-bold h-12 px-7 rounded-xl shadow-lg shadow-blue-900/30 mt-3">
-                {t("btn_start")} <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
+              <button
+                onClick={() => setView("app")}
+                className="bg-[#1E3F20] hover:bg-[#152e17] text-white font-bold h-12 px-7 rounded-xl shadow-lg mt-3 flex items-center gap-2 cursor-pointer text-sm"
+              >
+                <span>{t("btn_start")}</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
 
-            <div className="lg:col-span-6 relative h-80 sm:h-96 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+            <div className="lg:col-span-6 relative h-80 sm:h-96 rounded-2xl overflow-hidden border border-[#0D0B09]/10 shadow-2xl">
               <Image
                 src="/hospital_building.png"
                 alt="Modern high tech hospital building exterior"
                 fill
                 className="object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1320] via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl clinical-card text-xs">
-                <p className="font-bold text-white text-sm">Empaneled Andhra Pradesh Healthcare Facilities</p>
-                <p className="text-slate-300 mt-0.5">33 Real Hospitals covering Vijayawada, Visakhapatnam, Guntur, Tirupati, Kakinada, Nellore, and Kurnool.</p>
-              </div>
             </div>
 
           </div>
@@ -1379,7 +1491,27 @@ export default function Page() {
         <ClinicalFooter setView={setView} t={t} />
 
         {/* FLOATING AI HEALTH ASSISTANT CHATBOT WIDGET */}
-        <AIChatbotWidget lang={lang} />
+        <AIChatbotWidget
+          lang={lang}
+          onMessageLogged={async (query, response) => {
+            if (user) {
+              await saveNeonChatTranscript(user.uid, query, response);
+              const activeDb = getUserDatabase(user.uid);
+              setConversations(activeDb.conversations);
+            } else {
+              const guestUid = "guest_temp_user";
+              const activeDb = getUserDatabase(guestUid);
+              const timeFormatted = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              const updated = [
+                ...activeDb.conversations,
+                { id: `u_${Date.now()}`, sender: "user" as const, text: query, timestamp: timeFormatted },
+                { id: `b_${Date.now() + 1}`, sender: "bot" as const, text: response, timestamp: timeFormatted }
+              ];
+              saveUserDatabase(guestUid, { conversations: updated });
+              setConversations(updated);
+            }
+          }}
+        />
 
       </div>
       </TooltipProvider>
@@ -1389,20 +1521,20 @@ export default function Page() {
   /* ======================= APP VIEW (CORE DASHBOARD) ======================= */
   return (
     <TooltipProvider>
-    <div className="min-h-screen flex flex-col bg-[#0B1320] text-slate-100 font-sans print:bg-white print:text-black">
+    <div className="min-h-screen flex flex-col bg-[#F4EBDD] text-[#0D0B09] font-sans print:bg-white print:text-black">
       
       {/* HEADER WITH MULTILINGUAL SWITCHER (Hidden during print) */}
-      <header className="border-b border-white/10 bg-[#0B1320]/90 backdrop-blur-xl sticky top-0 z-50 print:hidden">
+      <header className="border-b border-[#0D0B09]/10 bg-[#F4EBDD]/90 backdrop-blur-xl sticky top-0 z-50 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <button onClick={() => { setView("landing"); setResult(null); }}
-              className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-              <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-900/30">
-                <Stethoscope className="h-5 w-5 text-white" />
+              className="app-brand-btn flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#1E3F20] border border-transparent hover:opacity-90 text-white transition-all shadow-sm cursor-pointer">
+              <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
+                <Stethoscope className="h-4.5 w-4.5 text-white" />
               </div>
               <div className="text-left hidden sm:block">
-                <div className="text-base font-bold text-slate-100 leading-tight">{t("nav_title")}</div>
-                <div className="text-[11px] text-blue-400 font-semibold">{t("nav_subtitle")}</div>
+                <span className="text-xs font-bold text-white block leading-none">{t("nav_title")}</span>
+                <span className="text-[9px] text-white/70 font-semibold mt-0.5 block">{t("nav_subtitle")}</span>
               </div>
             </button>
 
@@ -1412,11 +1544,11 @@ export default function Page() {
               <div className="relative">
                 <button
                   onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#121C2D] border border-white/10 hover:border-blue-500/40 text-xs font-bold text-slate-200 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1E3F20] border border-transparent hover:opacity-90 text-xs font-bold text-white transition-all shadow-sm cursor-pointer"
                 >
-                  <Globe className="h-4 w-4 text-blue-400" />
+                  <Globe className="h-4 w-4 text-white" />
                   <span>{LANGUAGE_LIST.find(l => l.id === lang)?.label || "English"}</span>
-                  <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isLangDropdownOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-3.5 w-3.5 text-white/70 transition-transform ${isLangDropdownOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 <AnimatePresence>
@@ -1456,17 +1588,17 @@ export default function Page() {
                   <button
                     id="appUserProfileBtn"
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#121C2D] border border-blue-500/30 hover:border-blue-400 text-xs font-bold text-slate-100 transition-all shadow-sm"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1E3F20] border border-transparent hover:opacity-90 text-xs font-bold text-white transition-all shadow-sm cursor-pointer"
                   >
-                    <div className="h-6 w-6 rounded-full overflow-hidden border border-blue-400 shrink-0 bg-blue-600 flex items-center justify-center text-white text-[10px]">
+                    <div className="h-6 w-6 rounded-full overflow-hidden border border-white/20 shrink-0 bg-white/20 flex items-center justify-center text-white text-[10px] font-black">
                       {user.avatarUrl ? (
                         <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
                       ) : (
                         user.name.charAt(0).toUpperCase()
                       )}
                     </div>
-                    <span className="max-w-[100px] truncate">{user.name.split(" ")[0]}</span>
-                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isUserMenuOpen ? "rotate-180" : ""}`} />
+                    <span className="max-w-[100px] truncate text-white">{user.name.split(" ")[0]}</span>
+                    <ChevronDown className={`h-3.5 w-3.5 text-white/70 transition-transform ${isUserMenuOpen ? "rotate-180" : ""}`} />
                   </button>
 
                   <AnimatePresence>
@@ -1595,39 +1727,39 @@ export default function Page() {
                     type="button"
                     variant="outline"
                     onClick={() => applyPreset(PRESETS[0].data)}
-                    className="h-12 flex-col items-center justify-center p-2 bg-emerald-950/40 hover:bg-emerald-900/60 border-emerald-500/40 text-emerald-300 rounded-xl font-bold text-xs gap-1 transition-all shadow-sm hover:scale-[1.02]"
+                    className="preset-healthy-btn h-12 flex-col items-center justify-center p-2 rounded-xl font-bold text-xs gap-1 transition-all shadow-sm hover:scale-[1.02] cursor-pointer"
                   >
                     <div className="flex items-center gap-1">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                      <CheckCircle2 className="h-3.5 w-3.5" />
                       <span className="truncate">{t("preset_healthy")}</span>
                     </div>
-                    <span className="text-[9px] font-normal text-emerald-400/80">Baseline</span>
+                    <span className="text-[9px] font-normal opacity-85">Baseline</span>
                   </Button>
 
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => applyPreset(PRESETS[1].data)}
-                    className="h-12 flex-col items-center justify-center p-2 bg-amber-950/40 hover:bg-amber-900/60 border-amber-500/40 text-amber-300 rounded-xl font-bold text-xs gap-1 transition-all shadow-sm hover:scale-[1.02]"
+                    className="preset-borderline-btn h-12 flex-col items-center justify-center p-2 rounded-xl font-bold text-xs gap-1 transition-all shadow-sm hover:scale-[1.02] cursor-pointer"
                   >
                     <div className="flex items-center gap-1">
-                      <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
+                      <AlertTriangle className="h-3.5 w-3.5" />
                       <span className="truncate">{t("preset_borderline")}</span>
                     </div>
-                    <span className="text-[9px] font-normal text-amber-400/80">Mild Risk</span>
+                    <span className="text-[9px] font-normal opacity-85">Mild Risk</span>
                   </Button>
 
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => applyPreset(PRESETS[2].data)}
-                    className="h-12 flex-col items-center justify-center p-2 bg-rose-950/40 hover:bg-rose-900/60 border-rose-500/40 text-rose-300 rounded-xl font-bold text-xs gap-1 transition-all shadow-sm hover:scale-[1.02]"
+                    className="preset-elevated-btn h-12 flex-col items-center justify-center p-2 rounded-xl font-bold text-xs gap-1 transition-all shadow-sm hover:scale-[1.02] cursor-pointer"
                   >
                     <div className="flex items-center gap-1">
-                      <AlertOctagon className="h-3.5 w-3.5 text-rose-400" />
+                      <AlertOctagon className="h-3.5 w-3.5" />
                       <span className="truncate">{t("preset_elevated")}</span>
                     </div>
-                    <span className="text-[9px] font-normal text-rose-400/80">High Risk</span>
+                    <span className="text-[9px] font-normal opacity-85">High Risk</span>
                   </Button>
                 </div>
 
@@ -1767,11 +1899,11 @@ export default function Page() {
                     {!reportImagePreview ? (
                       <label
                         htmlFor="report-file-input"
-                        className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-dashed border-teal-500/30 bg-[#0B1320] hover:bg-[#172337] hover:border-teal-500/60 transition-all cursor-pointer text-center group"
+                        className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-dashed border-teal-500/40 bg-white hover:bg-[#E8F5E9] transition-all cursor-pointer text-center group"
                       >
-                        <FileUp className="h-5 w-5 text-teal-400 mb-1 group-hover:scale-110 transition-transform" />
-                        <span className="text-xs font-bold text-slate-200">Upload Lab Report Photo</span>
-                        <span className="text-[10px] text-slate-400">JPG, PNG, WEBP</span>
+                        <FileUp className="h-5 w-5 text-black mb-1 group-hover:scale-110 transition-transform" />
+                        <span className="text-xs font-bold text-black">Upload Lab Report Photo</span>
+                        <span className="text-[10px] text-black/60">JPG, PNG, WEBP</span>
                       </label>
                     ) : (
                       <div className="relative rounded-xl border border-white/10 bg-[#0B1320] p-2.5 flex items-center justify-between gap-2">
@@ -1807,11 +1939,11 @@ export default function Page() {
                     {!prescriptionImagePreview ? (
                       <label
                         htmlFor="prescription-file-input"
-                        className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-dashed border-indigo-500/30 bg-[#0B1320] hover:bg-[#172337] hover:border-indigo-500/60 transition-all cursor-pointer text-center group"
+                        className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-dashed border-indigo-500/40 bg-white hover:bg-[#E8F5E9] transition-all cursor-pointer text-center group"
                       >
-                        <Pill className="h-5 w-5 text-indigo-400 mb-1 group-hover:scale-110 transition-transform" />
-                        <span className="text-xs font-bold text-slate-200">Upload Doctor Prescription Slip</span>
-                        <span className="text-[10px] text-slate-400">JPG, PNG, WEBP</span>
+                        <Pill className="h-5 w-5 text-black mb-1 group-hover:scale-110 transition-transform" />
+                        <span className="text-xs font-bold text-black">Upload Doctor Prescription Slip</span>
+                        <span className="text-[10px] text-black/60">JPG, PNG, WEBP</span>
                       </label>
                     ) : (
                       <div className="relative rounded-xl border border-white/10 bg-[#0B1320] p-2.5 flex items-center justify-between gap-2">
@@ -2032,7 +2164,7 @@ export default function Page() {
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <div className="prose prose-invert max-w-none text-slate-200 bg-[#0B1320] rounded-xl p-4 border border-indigo-500/20 whitespace-pre-wrap text-xs leading-relaxed font-sans space-y-2">
+                          <div className="prose prose-slate max-w-none text-black bg-white rounded-xl p-4 border border-[#181818]/15 whitespace-pre-wrap text-xs leading-relaxed font-sans space-y-2">
                             {result.ai_summary}
                           </div>
                         </CardContent>
@@ -2437,8 +2569,8 @@ export default function Page() {
                                         <Calendar className="h-3.5 w-3.5" />
                                         {t("book_apt_btn")}
                                       </Button>
-                                      <a href={`tel:${h.phone}`} className="h-8 px-2.5 rounded-lg border border-white/10 hover:border-slate-600 bg-[#0B1320] text-slate-300 text-xs font-semibold flex items-center gap-1">
-                                        <Phone className="h-3 w-3 text-blue-400" /> {h.phone}
+                                      <a href={`tel:${h.phone}`} className="h-8 px-2.5 rounded-lg bg-[#181818] hover:bg-black text-white text-xs font-semibold flex items-center gap-1 shadow-sm" style={{ color: '#ffffff' }}>
+                                        <Phone className="h-3 w-3 text-white" style={{ color: '#ffffff' }} /> {h.phone}
                                       </a>
                                     </div>
                                   </div>
@@ -2736,7 +2868,27 @@ export default function Page() {
       <ClinicalFooter setView={setView} t={t} />
 
       {/* FLOATING AI HEALTH ASSISTANT CHATBOT WIDGET */}
-      <AIChatbotWidget lang={lang} />
+      <AIChatbotWidget
+        lang={lang}
+        onMessageLogged={async (query, response) => {
+          if (user) {
+            await saveNeonChatTranscript(user.uid, query, response);
+            const activeDb = getUserDatabase(user.uid);
+            setConversations(activeDb.conversations);
+          } else {
+            const guestUid = "guest_temp_user";
+            const activeDb = getUserDatabase(guestUid);
+            const timeFormatted = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const updated = [
+              ...activeDb.conversations,
+              { id: `u_${Date.now()}`, sender: "user" as const, text: query, timestamp: timeFormatted },
+              { id: `b_${Date.now() + 1}`, sender: "bot" as const, text: response, timestamp: timeFormatted }
+            ];
+            saveUserDatabase(guestUid, { conversations: updated });
+            setConversations(updated);
+          }
+        }}
+      />
 
       {/* AUTHENTICATION MODAL */}
       <InlineAuthModal

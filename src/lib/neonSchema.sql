@@ -1,6 +1,6 @@
 -- ====================================================================
 --  Neon Postgres Database Schema for HealthPredict AI Portal
---  Tables: neon_users, user_history, user_appointments
+--  Tables: neon_users, user_history, user_appointments, ai_chat_transcripts, user_medications, user_conditions
 -- ====================================================================
 
 -- 1. Neon Users Table
@@ -44,5 +44,33 @@ CREATE TABLE IF NOT EXISTS user_appointments (
   time_slot VARCHAR(50) NOT NULL,
   symptoms TEXT NOT NULL,
   status VARCHAR(100) DEFAULT 'Confirmed & Sent to OPD Dispatch',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. AI Chat Transcripts Table
+CREATE TABLE IF NOT EXISTS ai_chat_transcripts (
+  id VARCHAR(255) PRIMARY KEY,
+  user_id VARCHAR(255) REFERENCES neon_users(id) ON DELETE CASCADE,
+  user_query TEXT NOT NULL,
+  ai_response TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. User Medications Table
+CREATE TABLE IF NOT EXISTS user_medications (
+  id VARCHAR(255) PRIMARY KEY,
+  user_id VARCHAR(255) REFERENCES neon_users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  dosage VARCHAR(100) NOT NULL,
+  frequency VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. User Conditions Table
+CREATE TABLE IF NOT EXISTS user_conditions (
+  id VARCHAR(255) PRIMARY KEY,
+  user_id VARCHAR(255) REFERENCES neon_users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  status VARCHAR(100) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

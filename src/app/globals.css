@@ -7,31 +7,56 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-border: var(--border);
+  
+  /* Overrides for slate shades to match the light gray reference layout typography */
+  --color-slate-50: #181818;
+  --color-slate-100: #181818;
+  --color-slate-200: #181818;
+  --color-slate-300: #404040;
+  --color-slate-400: #404040;
+  --color-slate-500: #404040;
+  --color-slate-600: #4A4A4A;
+  --color-slate-700: #4A4A4A;
+  --color-slate-800: #5C5C5C;
+  --color-slate-900: #5C5C5C;
+
+  /* Map blue variables to dark charcoal for consistent button theme implementation */
+  --color-blue-100: #ECECEB;
+  --color-blue-200: #181818;
+  --color-blue-300: #181818;
+  --color-blue-400: #181818;
+  --color-blue-500: #181818;
+  --color-blue-600: #181818;
+  --color-blue-700: #181818;
+  --color-blue-800: #181818;
+  --color-blue-900: #181818;
+  --color-blue-950: #181818;
+  
   --font-sans: var(--font-jakarta-sans), var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
 :root {
   --radius: 0.75rem;
-  /* Bespoke Human-Designed Clinical Palette */
-  --background: #0B1320;       /* Warm Midnight Sapphire */
-  --foreground: #F8FAFC;       /* Soft Clinical Off-White */
-  --card: #121C2D;             /* Slate Card Surface */
-  --card-foreground: #F8FAFC;
-  --popover: #121C2D;
-  --popover-foreground: #F8FAFC;
-  --primary: #2563EB;          /* Deep Sapphire Blue */
-  --primary-foreground: #FFFFFF;
-  --secondary: #172337;        /* Muted Navy Secondary */
-  --secondary-foreground: #E2E8F0;
-  --muted: #172337;
-  --muted-foreground: #94A3B8;
-  --accent: #0D9488;           /* Muted Clinical Teal */
-  --accent-foreground: #FFFFFF;
+  /* Bespoke Clinical Reference Palette */
+  --background: #EAECE9;       /* Global background: Clean Light Gray/Off-White */
+  --foreground: #181818;       /* Body text color: Dark Charcoal */
+  --card: #ffffff;             /* Card background: Pure White */
+  --card-foreground: #181818;
+  --popover: #EAECE9;
+  --popover-foreground: #181818;
+  --primary: #181818;          /* Buttons background: Solid Dark Charcoal */
+  --primary-foreground: #ffffff;
+  --secondary: #ffffff;
+  --secondary-foreground: #181818;
+  --muted: #ffffff;
+  --muted-foreground: #404040;
+  --accent: #181818;
+  --accent-foreground: #ffffff;
   --destructive: #E11D48;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #2563EB;
+  --border: rgba(24, 24, 24, 0.08);
+  --input: rgba(24, 24, 24, 0.08);
+  --ring: #181818;
 }
 
 @keyframes marquee {
@@ -49,13 +74,13 @@
   animation-play-state: paused;
 }
 
-/* Bespoke Clinical Cards (Human-designed feel) */
+/* Bespoke Clinical Cards (Pure White background, thin border, soft shadows) */
 .clinical-card {
-  background-color: rgba(18, 28, 45, 0.85);
+  background-color: #ffffff !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(24, 24, 24, 0.08) !important;
+  box-shadow: 0 4px 18px -2px rgba(24, 24, 24, 0.04), 0 2px 6px -1px rgba(24, 24, 24, 0.02) !important;
 }
 
 .clinical-card-interactive {
@@ -63,19 +88,478 @@
 }
 
 .clinical-card-interactive:hover {
-  background-color: rgba(23, 35, 55, 0.95);
-  border-color: rgba(37, 99, 235, 0.35);
-  box-shadow: 0 12px 32px -8px rgba(11, 19, 32, 0.6);
+  background-color: #ffffff !important;
+  border-color: rgba(24, 24, 24, 0.2) !important;
+  box-shadow: 0 12px 32px -8px rgba(24, 24, 24, 0.1) !important;
   transform: translateY(-2px);
 }
 
 @layer base {
   * {
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(24, 24, 24, 0.08);
   }
   body {
-    background-color: #0B1320;
-    color: #F8FAFC;
+    background-color: #EAECE9;
+    color: #181818;
     font-family: var(--font-sans);
   }
+}
+
+/* Direct class remapping for hardcoded background elements */
+div[class*="bg-[#0B1320]"]:not(#inspiring-journeys-section *),
+section[class*="bg-[#0B1320]"]:not(#inspiring-journeys-section *),
+header[class*="bg-[#0B1320]"]:not(#inspiring-journeys-section *),
+footer[class*="bg-[#0B1320]"]:not(#inspiring-journeys-section *),
+input[class*="bg-[#0B1320]"]:not(#inspiring-journeys-section *),
+textarea[class*="bg-[#0B1320]"]:not(#inspiring-journeys-section *),
+select[class*="bg-[#0B1320]"]:not(#inspiring-journeys-section *) {
+  background-color: #EAECE9 !important;
+}
+
+div[class*="bg-[#121C2D]"]:not(#inspiring-journeys-section *),
+section[class*="bg-[#121C2D]"]:not(#inspiring-journeys-section *),
+header[class*="bg-[#121C2D]"]:not(#inspiring-journeys-section *),
+footer[class*="bg-[#121C2D]"]:not(#inspiring-journeys-section *),
+input[class*="bg-[#121C2D]"]:not(#inspiring-journeys-section *),
+textarea[class*="bg-[#121C2D]"]:not(#inspiring-journeys-section *),
+select[class*="bg-[#121C2D]"]:not(#inspiring-journeys-section *) {
+  background-color: #ffffff !important;
+}
+
+div[class*="bg-[#0E1726]"]:not(#inspiring-journeys-section *),
+section[class*="bg-[#0E1726]"]:not(#inspiring-journeys-section *),
+header[class*="bg-[#0E1726]"]:not(#inspiring-journeys-section *),
+footer[class*="bg-[#0E1726]"]:not(#inspiring-journeys-section *) {
+  background-color: rgba(234, 236, 233, 0.1) !important;
+}
+
+div[class*="bg-[#080E18]"]:not(#inspiring-journeys-section *),
+footer[class*="bg-[#080E18]"]:not(#inspiring-journeys-section *) {
+  background-color: #EAECE9 !important;
+}
+
+/* Remap old background utility classes to Light Gray #EAECE9 */
+div[class*="bg-[#F4EBDD]"]:not(#inspiring-journeys-section *),
+section[class*="bg-[#F4EBDD]"]:not(#inspiring-journeys-section *),
+header[class*="bg-[#F4EBDD]"]:not(#inspiring-journeys-section *),
+footer[class*="bg-[#F4EBDD]"]:not(#inspiring-journeys-section *),
+nav[class*="bg-[#F4EBDD]"]:not(#inspiring-journeys-section *) {
+  background-color: #EAECE9 !important;
+}
+
+div[class*="bg-[#F4EBDD]/90"]:not(#inspiring-journeys-section *),
+nav[class*="bg-[#F4EBDD]/90"]:not(#inspiring-journeys-section *) {
+  background-color: rgba(234, 236, 233, 0.9) !important;
+}
+
+div[class*="bg-[#F4EBDD]/60"]:not(#inspiring-journeys-section *) {
+  background-color: rgba(234, 236, 233, 0.6) !important;
+}
+
+div[class*="bg-[#F4EBDD]/50"]:not(#inspiring-journeys-section *) {
+  background-color: rgba(234, 236, 233, 0.5) !important;
+}
+
+/* Remap old gradient background colors to solid Light Gray #EAECE9 */
+[class*="from-[#F4EBDD]"]:not(#inspiring-journeys-section *),
+[class*="to-[#EED4AC]"]:not(#inspiring-journeys-section *) {
+  background-image: none !important;
+  background-color: #EAECE9 !important;
+}
+
+/* Remap beige accents to pure white card background #ffffff */
+div[class*="bg-[#EED4AC]"]:not(#inspiring-journeys-section *):not([class*="rounded-full"]),
+section[class*="bg-[#EED4AC]"]:not(#inspiring-journeys-section *):not([class*="rounded-full"]),
+button[class*="bg-[#EED4AC]"]:not(#inspiring-journeys-section *):not([class*="rounded-full"]) {
+  background-color: #ffffff !important;
+}
+
+div[class*="bg-[#EED4AC]/50"]:not(#inspiring-journeys-section *):not([class*="rounded-full"]),
+div[class*="bg-[#EED4AC]/30"]:not(#inspiring-journeys-section *):not([class*="rounded-full"]),
+div[class*="bg-[#EED4AC]/20"]:not(#inspiring-journeys-section *):not([class*="rounded-full"]) {
+  background-color: #ffffff !important;
+}
+
+/* Ensure borders are thin and clean, similar to the reference mockup */
+div[class*="border-white/"]:not(#inspiring-journeys-section *),
+section[class*="border-white/"]:not(#inspiring-journeys-section *),
+button[class*="border-white/"]:not(#inspiring-journeys-section *),
+input[class*="border-white/"]:not(#inspiring-journeys-section *),
+header[class*="border-white/"]:not(#inspiring-journeys-section *),
+footer[class*="border-white/"]:not(#inspiring-journeys-section *) {
+  border-color: rgba(24, 24, 24, 0.08) !important;
+}
+
+[class*="border-[#EED4AC]"]:not(#inspiring-journeys-section *),
+[class*="border-[#0D0B09]"]:not(#inspiring-journeys-section *),
+[class*="border-[#1E3F20]"]:not(#inspiring-journeys-section *) {
+  border-color: rgba(24, 24, 24, 0.08) !important;
+}
+
+/* Pure White Background Cards and Containers Override */
+div[class*="bg-[#121C2D]"]:not(#inspiring-journeys-section *),
+[data-slot="card"]:not(#inspiring-journeys-section *) {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(24, 24, 24, 0.08) !important;
+  box-shadow: 0 4px 18px -2px rgba(24, 24, 24, 0.04) !important;
+}
+
+/* Make all text elements default to reference layout dark gray/charcoal values #524646 */
+body *:not(button):not(button *):not(a[class*="bg-"]):not(a[class*="bg-"] *):not(#inspiring-journeys-section):not(#inspiring-journeys-section *):not([class*="bg-black"] *):not([class*="bg-[#181818]"] *):not([class*="bg-[#000000]"] *):not([class*="bg-[#1E3F20]"] *):not([class*="bg-[#1E3F20]"]):not([class*="bg-emerald-"] *):not([class*="bg-rose-"] *):not([class*="bg-amber-"] *):not([class*="bg-teal-"] *):not([class*="text-emerald-"]):not(.text-white):not(.text-white *):not([class*="text-white"]):not([class*="text-white"] *):not([class*="text-[#F4EBDD]"]):not([class*="bg-[#0D0B09]"] *):not([class*="text-emerald-"] *):not([class*="text-rose-"] *):not([class*="text-red-"] *):not([class*="text-green-"] *):not([class*="text-green-"]):not([class*="text-emerald-300"]):not([class*="text-blue-300"]):not([role="option"]):not([role="option"] *):not([class*="SelectContent"] *):not([data-slot="select-content"] *) {
+  color: #524646 !important;
+}
+
+/* Ensure text-white and text-[#F4EBDD] classes are strictly white */
+.text-white,
+.text-white *,
+[class*="text-white"],
+[class*="text-white"] *,
+[class*="text-[#F4EBDD]"],
+[class*="text-[#F4EBDD]"] * {
+  color: #ffffff !important;
+}
+
+/* Ensure green/AP health status badge text is strictly green */
+[class*="text-emerald-"],
+[class*="text-emerald-"] *,
+[class*="text-green-"],
+[class*="text-green-"] * {
+  color: #10b981 !important;
+}
+
+/* Ensure red/108 emergency text is strictly red */
+[class*="text-rose-"],
+[class*="text-rose-"] *,
+[class*="text-red-"],
+[class*="text-red-"] * {
+  color: #ef4444 !important;
+}
+
+/* Ensure all footer text is strictly black #000000 (excluding buttons, anchors with backgrounds, and status states) */
+footer *:not(button):not(button *):not(a[class*="bg-"]):not(a[class*="bg-"] *):not([class*="bg-[#1E3F20]"] *):not([class*="bg-rose-"] *):not([class*="text-rose-"]):not([class*="text-rose-"] *):not([class*="text-red-"]):not([class*="text-red-"] *):not([class*="text-emerald-"]):not([class*="text-emerald-"] *) {
+  color: #000000 !important;
+}
+
+/* Force all paragraph elements across the website to have solid black color #000000 (excluding the isolated stories section) */
+p:not(#inspiring-journeys-section *):not([class*="text-rose-"]):not([class*="text-red-"]):not([class*="text-emerald-"]):not([class*="text-green-"]):not(.text-white) {
+  color: #000000 !important;
+}
+
+/* Force navigation texts and regional location texts to strictly render in solid black #000000 */
+nav *:not(button):not(button *):not([class*="bg-[#1E3F20]"] *):not(svg),
+footer a:not(button):not(button *):not(a[class*="bg-"]):not(a[class*="bg-"] *),
+footer span:not([class*="bg-rose-"]):not([class*="bg-[#EED4AC]"] *):not([class*="bg-[#EED4AC]"]) {
+  color: #000000 !important;
+}
+
+span:has(svg) {
+  color: #000000 !important;
+}
+
+/* Force main headings to be extra dark charcoal #181818 for high hierarchy contrast */
+h1, h2, h3, h4, h5, h6,
+[class*="font-black"],
+[class*="font-extrabold"],
+[class*="font-bold"] {
+  color: #181818 !important;
+}
+
+[class*="text-[#0D0B09]"]:not(#inspiring-journeys-section *) {
+  color: #181818 !important;
+}
+
+/* Reference style soft green-gray badge override (e.g. "Our Mission & Standards") */
+span[class*="bg-[#EED4AC]"]:not(#inspiring-journeys-section *),
+div[class*="bg-[#EED4AC]"][class*="rounded-full"]:not(#inspiring-journeys-section *),
+div[class*="bg-[#EED4AC]/80"][class*="rounded-full"]:not(#inspiring-journeys-section *) {
+  background-color: #D2DDD0 !important;
+  color: #1E3F20 !important;
+  border-color: rgba(30, 63, 32, 0.12) !important;
+}
+span[class*="bg-[#EED4AC]"]:not(#inspiring-journeys-section *) *,
+div[class*="bg-[#EED4AC]"][class*="rounded-full"]:not(#inspiring-journeys-section *) * {
+  color: #1E3F20 !important;
+}
+
+/* Buttons Solid Dark Charcoal background and strict White text and icons (excluding presets, brand buttons, user profile controls, green/sage bg buttons and tab controls) */
+button:not(#inspiring-journeys-section *):not(#tabReportsBtn):not(#tabAppointmentsBtn):not(#tabChatsBtn):not(#tabMedicationsBtn):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
+.btn:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
+[role="button"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
+a[class*="bg-blue-"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
+button[class*="bg-blue-"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) {
+  background-color: #181818 !important;
+  color: #ffffff !important;
+  border-color: #181818 !important;
+  box-shadow: none !important;
+}
+
+button:not(#inspiring-journeys-section *):not(#tabReportsBtn):not(#tabAppointmentsBtn):not(#tabChatsBtn):not(#tabMedicationsBtn):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) *,
+.btn:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) *,
+[role="button"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) * {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+/* Force all text inside card containers to render strictly in pure black #000000 (excluding buttons, SVGs, white text, and emergency states) */
+.clinical-card *:not(button):not(button *):not(svg):not(svg *):not([class*="bg-black"] *):not([class*="bg-[#181818]"] *):not([class*="bg-[#000000]"] *):not([class*="bg-[#1E3F20]"] *):not([class*="bg-[#0D0B09]"] *):not(.text-white):not([class*="text-white"]):not([class*="text-rose-"]):not([class*="text-rose-"] *):not([class*="text-red-"]):not([class*="text-red-"] *):not([data-slot="select-trigger"]):not([data-slot="select-trigger"] *):not([class*="SelectTrigger"]):not([class*="SelectTrigger"] *) {
+  color: #000000 !important;
+}
+
+/* Ensure important/risk AlertTriangle warning symbols render in yellow */
+svg[class*="AlertTriangle"],
+svg[class*="alert-triangle"] {
+  color: #eab308 !important;
+}
+
+/* Force all form inputs, select options, and textarea content to render strictly in #000000 */
+input, select, textarea, select option {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  border: 1px solid rgba(24, 24, 24, 0.12) !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: rgba(24, 24, 24, 0.45) !important;
+}
+
+/* Slider / check elements */
+input[type="checkbox"] {
+  border-color: rgba(24, 24, 24, 0.2) !important;
+}
+input[type="range"] {
+  accent-color: #181818 !important;
+}
+
+/* EXCLUSION RULES FOR STRENGTH & HOPE SECTION */
+#inspiring-journeys-section {
+  background-color: #F4EBDD !important;
+  border-top: 1px solid #EED4AC !important;
+}
+#inspiring-journeys-section * {
+  color: inherit !important;
+}
+#inspiring-journeys-section .text-white {
+  color: #ffffff !important;
+}
+#inspiring-journeys-section p {
+  color: rgba(244, 235, 221, 0.8) !important;
+}
+#inspiring-journeys-section h2 {
+  color: #0D0B09 !important;
+}
+#inspiring-journeys-section button {
+  background-color: transparent !important;
+  color: #0D0B09 !important;
+  border-color: rgba(13, 11, 9, 0.2) !important;
+}
+#inspiring-journeys-section button:hover {
+  background-color: #0D0B09 !important;
+  color: #F4EBDD !important;
+}
+#inspiring-journeys-section button * {
+  color: inherit !important;
+}
+#inspiring-journeys-section .bg-\[\#0D0B09\] {
+  background-color: #0D0B09 !important;
+}
+#inspiring-journeys-section .bg-\[\#0D0B09\/20\] {
+  background-color: rgba(13, 11, 9, 0.2) !important;
+}
+
+/* Force the disclaimer alert triangle warning icon strictly to yellow */
+.disclaimer-warning-icon,
+svg.disclaimer-warning-icon,
+footer svg.disclaimer-warning-icon {
+  color: #eab308 !important;
+  stroke: #eab308 !important;
+}
+
+/* Healthy Preset Button: Solid green background, white text and icon */
+.preset-healthy-btn,
+button.preset-healthy-btn {
+  background-color: #10b981 !important;
+  border: 1px solid #10b981 !important;
+}
+.preset-healthy-btn *,
+.preset-healthy-btn svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: none !important;
+}
+.preset-healthy-btn:hover {
+  background-color: #059669 !important;
+  border-color: #059669 !important;
+  transform: translateY(-1px);
+}
+
+/* Borderline Preset Button: Solid yellow background, white text and icon */
+.preset-borderline-btn,
+button.preset-borderline-btn {
+  background-color: #eab308 !important;
+  border: 1px solid #eab308 !important;
+}
+.preset-borderline-btn *,
+.preset-borderline-btn svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: none !important;
+}
+.preset-borderline-btn:hover {
+  background-color: #ca8a04 !important;
+  border-color: #ca8a04 !important;
+  transform: translateY(-1px);
+}
+
+/* Elevated Preset Button: Solid red background, white text and icon */
+.preset-elevated-btn,
+button.preset-elevated-btn {
+  background-color: #ef4444 !important;
+  border: 1px solid #ef4444 !important;
+}
+.preset-elevated-btn *,
+.preset-elevated-btn svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: none !important;
+}
+.preset-elevated-btn:hover {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  transform: translateY(-1px);
+}
+
+/* Ensure Radix UI Select dropdown popups render with black backgrounds and solid white text */
+body [data-slot="select-content"],
+body [data-radix-popper-content-wrapper] [role="listbox"],
+body [role="listbox"],
+body [class*="SelectContent"] {
+  background-color: #181818 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+body [data-slot="select-content"] *,
+body [data-radix-popper-content-wrapper] [role="listbox"] *,
+body [role="listbox"] *,
+body [role="option"] *,
+body [data-slot="select-item"] *,
+body [class*="SelectContent"] * {
+  color: #ffffff !important;
+}
+
+/* Ensure dropdown option items themselves have a default black background, white text and vertical spacing */
+body [data-slot="select-item"],
+body [role="option"] {
+  background-color: #181818 !important;
+  color: #ffffff !important;
+  margin-bottom: 4px !important;
+}
+
+body [data-slot="select-item"]:last-child,
+body [role="option"]:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Hover / Highlighted State: change background-color to #E8F5E9 and text color to black #000000 */
+body [data-slot="select-item"]:focus,
+body [data-slot="select-item"][data-highlighted],
+body [role="option"]:hover,
+body [role="option"][data-highlighted],
+body [role="option"][data-state="active"] {
+  background-color: #E8F5E9 !important;
+}
+
+body [data-slot="select-item"]:focus *,
+body [data-slot="select-item"][data-highlighted] *,
+body [role="option"]:hover *,
+body [role="option"][data-highlighted] *,
+body [role="option"][data-state="active"] * {
+  color: #000000 !important;
+}
+/* Style SelectTrigger dropdown buttons to render with black backgrounds and white text/icons */
+body [data-slot="select-trigger"],
+body button[class*="SelectTrigger"],
+body [class*="SelectTrigger"] {
+  background-color: #181818 !important;
+  color: #ffffff !important;
+  border-color: #181818 !important;
+}
+
+body [data-slot="select-trigger"] *,
+body button[class*="SelectTrigger"] *,
+body [class*="SelectTrigger"] * {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+body [data-slot="select-trigger"]:hover,
+body button[class*="SelectTrigger"]:hover,
+body [class*="SelectTrigger"]:hover {
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+/* Force brand stethoscope icon to render strictly in green #10b981 */
+.brand-stethoscope-icon,
+svg.brand-stethoscope-icon,
+button svg.brand-stethoscope-icon,
+div svg.brand-stethoscope-icon {
+  color: #10b981 !important;
+  stroke: #10b981 !important;
+  fill: none !important;
+}
+
+/* App Header Brand Button: green background #1E3F20, white text */
+.app-brand-btn,
+button.app-brand-btn {
+  background-color: #1E3F20 !important;
+  border-color: transparent !important;
+}
+
+.app-brand-btn *,
+.app-brand-btn span,
+.app-brand-btn div {
+  color: #ffffff !important;
+}
+
+/* Style all buttons in the navigation bars to render in green #1E3F20 and white text/icons */
+nav button:not([role="option"]),
+header button:not([role="option"]),
+nav [role="button"]:not([role="option"]),
+header [role="button"]:not([role="option"]) {
+  background-color: #1E3F20 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+nav button:not([role="option"]) *,
+header button:not([role="option"]) *,
+nav [role="button"]:not([role="option"]) *,
+header [role="button"]:not([role="option"]) * {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+nav button:not([role="option"]):hover,
+header button:not([role="option"]):hover,
+nav [role="button"]:not([role="option"]):hover,
+header [role="button"]:not([role="option"]):hover {
+  background-color: #152c16 !important;
+  border-color: transparent !important;
+}
+
+/* Force user profile buttons to render with green background #1E3F20 and white text/icons */
+#userProfileBtn,
+#appUserProfileBtn,
+button#userProfileBtn,
+button#appUserProfileBtn {
+  background-color: #1E3F20 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+#userProfileBtn *,
+#appUserProfileBtn *,
+button#userProfileBtn *,
+button#appUserProfileBtn * {
+  color: #ffffff !important;
 }

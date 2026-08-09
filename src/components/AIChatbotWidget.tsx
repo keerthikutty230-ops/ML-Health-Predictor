@@ -14,6 +14,7 @@ interface ChatMessage {
 
 interface AIChatbotWidgetProps {
   lang?: Language;
+  onMessageLogged?: (userQuery: string, aiResponse: string) => void;
 }
 
 const QUICK_PROMPTS_DICT: Record<Language, string[]> = {
@@ -42,7 +43,7 @@ const INITIAL_BOT_MSG: Record<Language, string> = {
   pa: "ਹੈਲਥਪ੍ਰੈਡਿਕਟ AI ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ! ਮੈਂ ਤੁਹਾਡੇ ਸਿਹਤ ਸਵਾਲਾਂ ਅਤੇ ਹਸਪਤਾਲਾਂ ਦੀ ਜਾਣਕਾਰੀ ਲਈ ਇੱਥੇ ਹਾਂ।",
 };
 
-export default function AIChatbotWidget({ lang = "en" }: AIChatbotWidgetProps) {
+export default function AIChatbotWidget({ lang = "en", onMessageLogged }: AIChatbotWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
@@ -166,6 +167,10 @@ export default function AIChatbotWidget({ lang = "en" }: AIChatbotWidgetProps) {
       };
       setMessages(prev => [...prev, botMsg]);
       setIsTyping(false);
+
+      if (onMessageLogged) {
+        onMessageLogged(text, replyText);
+      }
     }, 500);
   };
 
@@ -182,27 +187,27 @@ export default function AIChatbotWidget({ lang = "en" }: AIChatbotWidgetProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.3 }}
-            className="w-80 sm:w-96 h-[510px] rounded-2xl bg-[#0B1320]/95 backdrop-blur-2xl border-2 border-blue-500/30 shadow-2xl shadow-blue-950/80 flex flex-col overflow-hidden mb-4"
+            className="w-80 sm:w-96 h-[510px] rounded-2xl bg-[#F4EBDD]/95 backdrop-blur-2xl border-2 border-[#1E3F20]/30 shadow-2xl flex flex-col overflow-hidden mb-4"
           >
             {/* CHAT HEADER */}
-            <div className="bg-[#121C2D] border-b border-white/10 p-3.5 flex items-center justify-between">
+            <div className="bg-[#EED4AC] border-b border-[#0D0B09]/10 p-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="relative">
-                  <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-900/40">
-                    <Stethoscope className="h-5 w-5 text-white" />
+                  <div className="h-9 w-9 rounded-xl bg-[#1E3F20] flex items-center justify-center shadow-md shadow-[#1E3F20]/20">
+                    <Stethoscope className="h-5 w-5 text-[#F4EBDD]" />
                   </div>
-                  <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-[#121C2D] animate-pulse" />
+                  <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-[#EED4AC] animate-pulse" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                    AI Health Assistant <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                  <h4 className="font-bold text-sm text-[#0D0B09] flex items-center gap-1.5">
+                    AI Health Assistant <Sparkles className="h-3.5 w-3.5 text-amber-700" />
                   </h4>
-                  <p className="text-[10px] font-semibold text-emerald-400">Online · AP Health Intelligence ({lang.toUpperCase()})</p>
+                  <p className="text-[10px] font-semibold text-emerald-800">Online · AP Health Intelligence ({lang.toUpperCase()})</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="h-7 w-7 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition-colors"
+                className="h-7 w-7 rounded-lg bg-[#F4EBDD] text-[#0D0B09]/60 hover:text-[#0D0B09] hover:bg-[#EED4AC] flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -218,19 +223,19 @@ export default function AIChatbotWidget({ lang = "en" }: AIChatbotWidgetProps) {
                   <div
                     className={`max-w-[85%] rounded-2xl p-3 leading-relaxed whitespace-pre-wrap ${
                       msg.sender === "user"
-                        ? "bg-blue-600 text-white rounded-br-none shadow-md shadow-blue-900/30 font-medium"
-                        : "bg-[#121C2D] text-slate-200 border border-white/10 rounded-bl-none"
+                        ? "bg-[#1E3F20] text-[#F4EBDD] rounded-br-none shadow-md font-medium"
+                        : "bg-[#EED4AC]/55 text-[#0D0B09] border border-[#0D0B09]/10 rounded-bl-none"
                     }`}
                   >
                     {msg.text}
                   </div>
-                  <span className="text-[9px] text-slate-400 mt-1 px-1">{msg.timestamp}</span>
+                  <span className="text-[9px] text-[#0D0B09]/60 mt-1 px-1">{msg.timestamp}</span>
                 </div>
               ))}
 
               {isTyping && (
-                <div className="flex items-center gap-1.5 text-xs text-slate-400 p-2 bg-[#121C2D] rounded-xl w-fit border border-white/10">
-                  <Bot className="h-4 w-4 text-blue-400 animate-spin" />
+                <div className="flex items-center gap-1.5 text-xs text-[#0D0B09]/60 p-2 bg-[#EED4AC]/55 rounded-xl w-fit border border-[#0D0B09]/10">
+                  <Bot className="h-4 w-4 text-[#1E3F20] animate-spin" />
                   <span className="italic">AI Assistant thinking...</span>
                 </div>
               )}
@@ -239,12 +244,12 @@ export default function AIChatbotWidget({ lang = "en" }: AIChatbotWidgetProps) {
             </div>
 
             {/* QUICK-ACTION PILLS */}
-            <div className="px-3 py-2 bg-[#080E18] border-t border-white/5 overflow-x-auto flex gap-1.5 scrollbar-none">
+            <div className="px-3 py-2 bg-[#EED4AC]/20 border-t border-[#0D0B09]/10 overflow-x-auto flex gap-1.5 scrollbar-none">
               {quickPrompts.map((qp, i) => (
                 <button
                   key={i}
                   onClick={() => handleSendMessage(qp)}
-                  className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-[#121C2D] text-blue-300 border border-blue-500/30 hover:bg-blue-600 hover:text-white transition-all shrink-0 shadow-sm"
+                  className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-[#F4EBDD] text-[#0D0B09] border border-[#0D0B09]/15 hover:bg-[#1E3F20] hover:text-[#F4EBDD] transition-all shrink-0 shadow-sm cursor-pointer"
                 >
                   {qp}
                 </button>
@@ -252,27 +257,27 @@ export default function AIChatbotWidget({ lang = "en" }: AIChatbotWidgetProps) {
             </div>
 
             {/* INPUT FIELD & SEND BUTTON */}
-            <div className="p-3 bg-[#121C2D] border-t border-white/10 flex items-center gap-2">
+            <div className="p-3 bg-[#EED4AC] border-t border-[#0D0B09]/10 flex items-center gap-2">
               <input
                 type="text"
                 placeholder={lang === "te" ? "ప్రశ్నలు అడగండి..." : lang === "hi" ? "प्रश्न पूछें..." : "Ask questions..."}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                className="flex-1 bg-[#0B1320] border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-blue-500/60 placeholder:text-slate-500"
+                className="flex-1 bg-[#F4EBDD] border border-[#0D0B09]/10 rounded-xl px-3 py-2 text-xs text-[#0D0B09] focus:outline-none focus:border-[#1E3F20]/60 placeholder:text-[#0D0B09]/40"
               />
               <button
                 onClick={() => handleSendMessage()}
                 disabled={!inputText.trim()}
-                className="h-9 w-9 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white flex items-center justify-center transition-all shrink-0 shadow-md shadow-blue-900/30"
+                className="h-9 w-9 rounded-xl bg-[#1E3F20] hover:bg-[#152e17] disabled:opacity-40 text-white flex items-center justify-center transition-all shrink-0 shadow-md cursor-pointer"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-4 w-4 text-[#F4EBDD]" />
               </button>
             </div>
 
             {/* DISCLAIMER FOOTER */}
-            <div className="px-3 py-1 bg-[#080E18] text-[9px] text-slate-400 text-center flex items-center justify-center gap-1">
-              <ShieldCheck className="h-3 w-3 text-blue-400" /> Educational support tool. Consult a doctor for diagnosis.
+            <div className="px-3 py-1 bg-[#EED4AC] text-[9px] text-[#0D0B09]/60 text-center flex items-center justify-center gap-1">
+              <ShieldCheck className="h-3 w-3 text-[#1E3F20]" /> Educational support tool. Consult a doctor for diagnosis.
             </div>
 
           </motion.div>
@@ -284,14 +289,14 @@ export default function AIChatbotWidget({ lang = "en" }: AIChatbotWidgetProps) {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative group flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-blue-600 to-teal-500 text-white shadow-xl shadow-blue-900/50 border border-white/20 transition-all cursor-pointer"
+        className="relative group flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#C7D3C0] hover:bg-[#b8c5b1] text-[#1E3F20] shadow-xl border border-[#1E3F20]/10 transition-all cursor-pointer"
       >
         <div className="relative">
-          <Stethoscope className="h-5 w-5 text-white" />
-          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-blue-600 animate-ping" />
+          <Stethoscope className="h-5 w-5 text-[#1E3F20]" />
+          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-emerald-600 border-2 border-[#C7D3C0] animate-ping" />
         </div>
         <span className="font-bold text-xs">AI Health Assistant</span>
-        <span className="bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 text-[9px] font-bold px-2 py-0.5 rounded-full">
+        <span className="bg-[#1E3F20]/10 text-[#1E3F20] border border-[#1E3F20]/20 text-[9px] font-bold px-2 py-0.5 rounded-full">
           Online
         </span>
       </motion.button>

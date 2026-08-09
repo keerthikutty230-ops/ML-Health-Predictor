@@ -1,7 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { AuthUser } from "@/components/AuthModal";
 import { RiskAssessmentRecord, SavedAppointmentRecord } from "@/components/ClinicalHistoryModal";
-import { getUserDatabase, saveUserDatabase } from "@/lib/userDatabase";
+import { getUserDatabase, saveUserDatabase, ChatRecord } from "@/lib/userDatabase";
 
 // Neon Postgres Connection Connection
 const DATABASE_URL = process.env.DATABASE_URL || process.env.NEXT_PUBLIC_NEON_DATABASE_URL;
@@ -131,9 +131,48 @@ export async function fetchNeonUserHistory(userId: string) {
         WHERE user_id = ${userId}
         ORDER BY created_at DESC;
       `;
+      const chats = await sql`
+        SELECT id, user_query, ai_response, created_at as timestamp
+        FROM ai_chat_transcripts
+        WHERE user_id = ${userId}
+        ORDER BY created_at ASC;
+      `;
+      const meds = await sql`
+        SELECT name, dosage, frequency
+        FROM user_medications
+        WHERE user_id = ${userId}
+        ORDER BY created_at ASC;
+      `;
+      const conditions = await sql`
+        SELECT name, status
+        FROM user_conditions
+        WHERE user_id = ${userId}
+        ORDER BY created_at ASC;
+      `;
+
+      const formattedConversations: ChatRecord[] = [];
+      chats.forEach((row: any) => {
+        const timeFormatted = new Date(row.timestamp).toLocaleString();
+        formattedConversations.push({
+          id: `u_${row.id}`,
+          sender: "user",
+          text: row.user_query,
+          timestamp: timeFormatted
+        });
+        formattedConversations.push({
+          id: `b_${row.id}`,
+          sender: "bot",
+          text: row.ai_response,
+          timestamp: timeFormatted
+        });
+      });
+
       return {
         reports: reports as any as RiskAssessmentRecord[],
-        appointments: appointments as any as SavedAppointmentRecord[]
+        appointments: appointments as any as SavedAppointmentRecord[],
+        conversations: formattedConversations,
+        medications: meds.map((m: any) => `${m.name} ${m.dosage} (${m.frequency})`.trim()),
+        healthConditions: conditions.map((c: any) => c.name)
       };
     } catch (e) {
       console.error("Neon query error:", e);
@@ -144,7 +183,10 @@ export async function fetchNeonUserHistory(userId: string) {
   const localDb = getUserDatabase(userId);
   return {
     reports: localDb.reports,
-    appointments: localDb.appointments
+    appointments: localDb.appointments,
+    conversations: localDb.conversations,
+    medications: localDb.medications,
+    healthConditions: localDb.healthConditions
   };
 }
 
@@ -183,4 +225,30 @@ export async function saveNeonAppointment(userId: string, apt: SavedAppointmentR
 
   const localDb = getUserDatabase(userId);
   saveUserDatabase(userId, { appointments: [apt, ...localDb.appointments] });
+}
+
+// 6. Save AI Chat Transcript into Neon Postgres
+export async function saveNeonChatTranscript(userId: string, userQuery: string, aiResponse: string) {
+  const sql = getNeonSql();
+  const transcriptId = `chat_${Date.now()}`;
+  if (sql) {
+    try {
+      await sql`
+        INSERT INTO ai_chat_transcripts (id, user_id, user_query, ai_response)
+        VALUES (${transcriptId}, ${userId}, ${userQuery}, ${aiResponse});
+      `;
+    } catch (e) {
+      console.error("Neon save chat transcript error:", e);
+    }
+  }
+
+  // Also sync with local storage DB
+  const localDb = getUserDatabase(userId);
+  const timeFormatted = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const updatedConvs = [
+    ...localDb.conversations,
+    { id: `u_${transcriptId}`, sender: "user" as const, text: userQuery, timestamp: timeFormatted },
+    { id: `b_${transcriptId}`, sender: "bot" as const, text: aiResponse, timestamp: timeFormatted }
+  ];
+  saveUserDatabase(userId, { conversations: updatedConvs });
 }
