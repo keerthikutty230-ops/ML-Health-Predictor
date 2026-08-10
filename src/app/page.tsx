@@ -220,7 +220,13 @@ function RiskGauge({ score, tier }: { score: number; tier: string }) {
 /* ================================================================== */
 function ClinicalFooter({ setView, t }: { setView?: (v: "landing" | "app") => void; t: (k: keyof typeof TRANSLATIONS.en) => string }) {
   return (
-    <footer className="bg-[#EAECE9] py-4 px-4 sm:px-6 lg:px-8 print:hidden">
+    <motion.footer
+      initial={{ opacity: 0, y: 25 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="bg-[#EAECE9] py-4 px-4 sm:px-6 lg:px-8 print:hidden"
+    >
       <div className="max-w-7xl mx-auto">
         <div className="clinical-card bg-white rounded-2xl p-4 sm:p-6 shadow-md border border-neutral-200/35 space-y-4">
           
@@ -317,7 +323,7 @@ function ClinicalFooter({ setView, t }: { setView?: (v: "landing" | "app") => vo
 
         </div>
       </div>
-    </footer>
+    </motion.footer>
   );
 }
 
@@ -881,7 +887,12 @@ export default function Page() {
   if (view === "landing") {
     return (
       <TooltipProvider>
-      <div className="min-h-screen flex flex-col bg-[#F4EBDD] text-[#0D0B09] font-sans selection:bg-[#1E3F20] selection:text-[#F4EBDD]">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="min-h-screen flex flex-col bg-[#F4EBDD] text-[#0D0B09] font-sans selection:bg-[#1E3F20] selection:text-[#F4EBDD]"
+      >
         
         {/* TOP NAVIGATION BAR WITH MULTILINGUAL TOGGLE */}
         <nav className="fixed top-0 w-full z-50 bg-[#F4EBDD]/90 backdrop-blur-xl border-b border-[#0D0B09]/10 text-[#0D0B09]">
@@ -1029,8 +1040,12 @@ export default function Page() {
         </nav>
 
         {/* HERO SECTION */}
-        <motion.section style={{ opacity: heroOpacity }}
-          className="relative min-h-screen flex items-center justify-center pt-32 pb-24 px-4 overflow-hidden bg-gradient-to-b from-[#F4EBDD] to-[#EED4AC] text-[#0D0B09]">
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="relative min-h-screen flex items-center justify-center pt-32 pb-24 px-4 overflow-hidden bg-gradient-to-b from-[#F4EBDD] to-[#EED4AC] text-[#0D0B09]"
+        >
           
           <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
             
@@ -1162,7 +1177,13 @@ export default function Page() {
         </motion.section>
 
         {/* REGIONAL HOSPITAL PARTNER TICKER */}
-        <section className="bg-[#EED4AC]/30 border-y border-[#0D0B09]/10 py-4 overflow-hidden relative text-[#0D0B09]">
+        <motion.section
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="bg-[#EED4AC]/30 border-y border-[#0D0B09]/10 py-4 overflow-hidden relative text-[#0D0B09]"
+        >
           <div className="max-w-7xl mx-auto px-4 mb-2 flex items-center justify-between text-xs text-[#0D0B09]/75 font-semibold">
             <span className="flex items-center gap-2 text-[#1E3F20] uppercase tracking-wider text-[11px]">
               <MapPinned className="h-3.5 w-3.5" /> {t("ticker_title")}
@@ -1184,10 +1205,17 @@ export default function Page() {
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* BENTO GRID FEATURE CARDS */}
-        <section id="bento" className="py-20 px-4 max-w-7xl mx-auto w-full space-y-12 text-[#0D0B09]">
+        <motion.section
+          id="bento"
+          initial={{ opacity: 0, y: 35 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="py-20 px-4 max-w-7xl mx-auto w-full space-y-12 text-[#0D0B09]"
+        >
           <div className="text-center space-y-3">
             <Badge className="bg-[#1E3F20]/10 text-[#1E3F20] border-[#1E3F20]/20 text-xs px-3.5 py-1">
               {t("bento_tag")}
@@ -1274,10 +1302,17 @@ export default function Page() {
             </div>
 
           </div>
-        </section>
+        </motion.section>
 
         {/* INSPIRING JOURNEYS OF STRENGTH AND HOPE STORIES SECTION */}
-        <section id="inspiring-journeys-section" className="bg-[#F4EBDD] py-24 px-4 border-t border-[#EED4AC] text-[#0D0B09]">
+        <motion.section
+          id="inspiring-journeys-section"
+          initial={{ opacity: 0, y: 35 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="bg-[#F4EBDD] py-24 px-4 border-t border-[#EED4AC] text-[#0D0B09]"
+        >
           <div className="max-w-7xl mx-auto space-y-12">
             <div className="text-center space-y-4">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-[#0D0B09] font-sans">
@@ -1399,10 +1434,17 @@ export default function Page() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ABOUT US SECTION WITH HOSPITAL BUILDING IMAGE */}
-        <section id="about" className="py-20 px-4 border-t border-[#0D0B09]/10 bg-[#EED4AC]/20 text-[#0D0B09]">
+        <motion.section
+          id="about"
+          initial={{ opacity: 0, y: 35 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="py-20 px-4 border-t border-[#0D0B09]/10 bg-[#EED4AC]/20 text-[#0D0B09]"
+        >
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             <div className="lg:col-span-6 space-y-6">
@@ -1446,7 +1488,7 @@ export default function Page() {
             </div>
 
           </div>
-        </section>
+        </motion.section>
 
         {/* RICH CLINICAL FOOTER */}
         <ClinicalFooter setView={setView} t={t} />
@@ -1474,7 +1516,7 @@ export default function Page() {
           }}
         />
 
-      </div>
+      </motion.div>
       </TooltipProvider>
     );
   }
@@ -1482,7 +1524,12 @@ export default function Page() {
   /* ======================= APP VIEW (CORE DASHBOARD) ======================= */
   return (
     <TooltipProvider>
-    <div className="min-h-screen flex flex-col bg-[#F4EBDD] text-[#0D0B09] font-sans print:bg-white print:text-black">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="min-h-screen flex flex-col bg-[#F4EBDD] text-[#0D0B09] font-sans print:bg-white print:text-black"
+    >
       
       {/* HEADER WITH MULTILINGUAL SWITCHER (Hidden during print) */}
       <header className="border-b border-[#0D0B09]/10 bg-[#F4EBDD]/90 backdrop-blur-xl sticky top-0 z-50 print:hidden">
@@ -2868,7 +2915,7 @@ export default function Page() {
         initialTab={historyInitialTab}
       />
 
-    </div>
+    </motion.div>
     </TooltipProvider>
   );
 }

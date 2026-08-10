@@ -95,6 +95,9 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   * {
     border-color: rgba(24, 24, 24, 0.08);
   }
