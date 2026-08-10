@@ -1280,12 +1280,9 @@ export default function Page() {
         <section id="inspiring-journeys-section" className="bg-[#F4EBDD] py-24 px-4 border-t border-[#EED4AC] text-[#0D0B09]">
           <div className="max-w-7xl mx-auto space-y-12">
             <div className="text-center space-y-4">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-[#000000] font-sans">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-[#0D0B09] font-sans">
                 Inspiring Journeys Of Strength And Hope
               </h2>
-              <p className="text-sm text-[#524646] max-w-2xl mx-auto font-medium">
-                Real recovery milestones and personalized clinical routing journeys powered by HealthPredict AI.
-              </p>
             </div>
 
             {/* Stories card grid showing 3 items based on index */}
@@ -1329,33 +1326,29 @@ export default function Page() {
               ].slice(activeStoryIndex, activeStoryIndex + 3).map((item, idx) => (
                 <div
                   key={idx}
-                  className="w-full flex flex-col rounded-3xl overflow-hidden border border-[#EED4AC] bg-white shadow-md transition-all duration-300 hover:shadow-xl hover:border-[#0D0B09]/30"
+                  className="group relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-[#EED4AC] bg-neutral-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[#0D0B09]/20"
                 >
-                  {/* Patient Image */}
-                  <div className="relative w-full h-56 overflow-hidden bg-neutral-100">
-                    <Image
-                      src={item.image}
-                      alt={`${item.name} recovery photo`}
-                      fill
-                      priority
-                      className="object-cover object-center"
-                    />
-                  </div>
+                  {/* Grayscale hover to color image */}
+                  <Image
+                    src={item.image}
+                    alt={`${item.name} recovery photo`}
+                    fill
+                    priority
+                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500 ease-in-out"
+                  />
 
-                  {/* Always-Visible Solid High-Contrast Content */}
-                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4 bg-white text-[#000000]">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="inline-block px-2.5 py-1 rounded-full bg-[#1E3F20]/10 text-[#1E3F20] text-[11px] font-bold tracking-wide">
-                          {item.diagnosis}
-                        </span>
-                        <span className="text-xs font-bold text-[#524646]">{item.age} yrs</span>
+                  {/* Absolute slide-in panel on hover */}
+                  <div className="absolute inset-x-0 bottom-0 bg-[#0D0B09]/95 text-[#F4EBDD] p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out flex flex-col justify-end min-h-[50%] backdrop-blur-sm">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-[#F4EBDD]/65 uppercase tracking-wider">
+                        <span>{item.diagnosis}</span>
+                        <span>{item.age} yrs</span>
                       </div>
-                      <h3 className="text-xl font-bold text-[#000000] leading-tight">
+                      <h3 className="text-lg font-black text-white leading-tight">
                         {item.name}
                       </h3>
                     </div>
-                    <p className="text-xs sm:text-sm text-[#1A1816] leading-relaxed font-normal">
+                    <p className="text-xs text-[#F4EBDD]/80 leading-relaxed font-medium mt-2">
                       "{item.story}"
                     </p>
                   </div>

@@ -636,22 +636,7 @@ input[type="password"] {
   color: #ffffff !important;
 }
 
-/* High Contrast and Stable Information Sections Rules */
-#inspiring-journeys-section {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-#inspiring-journeys-section h2,
-#inspiring-journeys-section h3 {
-  color: #000000 !important;
-}
-
-#inspiring-journeys-section p {
-  color: #1A1816 !important;
-  opacity: 1 !important;
-}
-
+/* High Contrast and Stable Clinical Card Rules */
 .clinical-card h3,
 .clinical-card h4,
 .clinical-card h2 {
