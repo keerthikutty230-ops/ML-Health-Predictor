@@ -546,27 +546,29 @@ export default function Page() {
     if (typeof window !== "undefined") {
       (window as any).openAuthModal = openAuthModal;
 
-      const triggerGoogleAuth = async (e?: Event) => {
-        e?.preventDefault();
-        e?.stopPropagation();
-        try {
-          const userObj = await neonSignInWithGoogleOAuth();
-          if (userObj) {
-            await loadUserProfile(userObj);
-          }
-        } catch (err) {
-          console.warn("Neon Google OAuth redirecting or notice:", err);
-          openAuthModal("signin");
-        }
-      };
-
       const signInBtn = document.getElementById("signInBtn");
       const appSignInBtn = document.getElementById("appSignInBtn");
       const signUpBtn = document.getElementById("signUpBtn");
       const appSignUpBtn = document.getElementById("appSignUpBtn");
 
-      [signInBtn, appSignInBtn, signUpBtn, appSignUpBtn].forEach((btn) => {
-        btn?.addEventListener("click", triggerGoogleAuth);
+      const handleSignInClick = (e?: Event) => {
+        e?.preventDefault();
+        e?.stopPropagation();
+        openAuthModal("signin");
+      };
+
+      const handleSignUpClick = (e?: Event) => {
+        e?.preventDefault();
+        e?.stopPropagation();
+        openAuthModal("signup");
+      };
+
+      [signInBtn, appSignInBtn].forEach((btn) => {
+        btn?.addEventListener("click", handleSignInClick);
+      });
+
+      [signUpBtn, appSignUpBtn].forEach((btn) => {
+        btn?.addEventListener("click", handleSignUpClick);
       });
     }
   }, [openAuthModal]);
@@ -1624,15 +1626,10 @@ export default function Page() {
                   <button
                     id="appSignInBtn"
                     type="button"
-                    onClick={async (e) => {
+                    onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      try {
-                        const userObj = await neonSignInWithGoogleOAuth();
-                        if (userObj) await loadUserProfile(userObj);
-                      } catch (err) {
-                        openAuthModal("signin");
-                      }
+                      openAuthModal("signin");
                     }}
                     className="border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-slate-200 hover:text-white font-bold text-xs h-9 rounded-xl px-3.5 flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                   >
@@ -1642,15 +1639,10 @@ export default function Page() {
                   <button
                     id="appSignUpBtn"
                     type="button"
-                    onClick={async (e) => {
+                    onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      try {
-                        const userObj = await neonSignInWithGoogleOAuth();
-                        if (userObj) await loadUserProfile(userObj);
-                      } catch (err) {
-                        openAuthModal("signup");
-                      }
+                      openAuthModal("signup");
                     }}
                     className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs h-9 rounded-xl px-3.5 flex items-center gap-1.5 shadow-md shadow-blue-900/40 transition-all cursor-pointer"
                   >

@@ -282,20 +282,20 @@ div[class*="bg-[#EED4AC]"][class*="rounded-full"]:not(#inspiring-journeys-sectio
 }
 
 /* Buttons Solid Dark Charcoal background and strict White text and icons (excluding presets, brand buttons, user profile controls, green/sage bg buttons and tab controls) */
-button:not(#inspiring-journeys-section *):not(#tabReportsBtn):not(#tabAppointmentsBtn):not(#tabChatsBtn):not(#tabMedicationsBtn):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
-.btn:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
-[role="button"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
-a[class*="bg-blue-"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
-button[class*="bg-blue-"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) {
+button:not(#inspiring-journeys-section *):not(#tabReportsBtn):not(#tabAppointmentsBtn):not(#tabChatsBtn):not(#tabMedicationsBtn):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not(#googleAuthModalBtn):not(#authCloseBtn):not(#authModalBox button:not(#authSubmitBtn)):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
+.btn:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not(#googleAuthModalBtn):not(#authCloseBtn):not(#authModalBox button:not(#authSubmitBtn)):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
+[role="button"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not(#googleAuthModalBtn):not(#authCloseBtn):not(#authModalBox button:not(#authSubmitBtn)):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
+a[class*="bg-blue-"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not(#googleAuthModalBtn):not(#authCloseBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]),
+button[class*="bg-blue-"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not(#googleAuthModalBtn):not(#authCloseBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) {
   background-color: #181818 !important;
   color: #ffffff !important;
   border-color: #181818 !important;
   box-shadow: none !important;
 }
 
-button:not(#inspiring-journeys-section *):not(#tabReportsBtn):not(#tabAppointmentsBtn):not(#tabChatsBtn):not(#tabMedicationsBtn):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) *,
-.btn:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) *,
-[role="button"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) * {
+button:not(#inspiring-journeys-section *):not(#tabReportsBtn):not(#tabAppointmentsBtn):not(#tabChatsBtn):not(#tabMedicationsBtn):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not(#googleAuthModalBtn):not(#authCloseBtn):not(#authModalBox button:not(#authSubmitBtn)):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) *,
+.btn:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not(#googleAuthModalBtn):not(#authCloseBtn):not(#authModalBox button:not(#authSubmitBtn)):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) *,
+[role="button"]:not(#inspiring-journeys-section *):not([class*="preset-"]):not(.app-brand-btn):not(#userProfileBtn):not(#appUserProfileBtn):not(#googleAuthModalBtn):not(#authCloseBtn):not(#authModalBox button:not(#authSubmitBtn)):not([class*="bg-[#1E3F20]"]):not([class*="bg-[#C7D3C0]"]) * {
   color: #ffffff !important;
   fill: #ffffff !important;
 }
@@ -561,5 +561,52 @@ button#appUserProfileBtn {
 #appUserProfileBtn *,
 button#userProfileBtn *,
 button#appUserProfileBtn * {
+  color: #ffffff !important;
+}
+
+/* Authentication Modal Custom Layout Rules */
+#authModalBox {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+#authModalBox input {
+  background-color: #FAFAFA !important;
+  color: #000000 !important;
+  border-color: #D1D5DB !important;
+}
+
+#authModalBox input:focus {
+  background-color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+#googleAuthModalBtn {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #D1D5DB !important;
+}
+
+#googleAuthModalBtn:hover {
+  background-color: #F9FAFB !important;
+}
+
+#googleAuthModalBtn span {
+  color: #111827 !important;
+}
+
+#authCloseBtn {
+  background-color: transparent !important;
+  color: #524646 !important;
+  border: none !important;
+}
+
+#authCloseBtn:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  color: #000000 !important;
+}
+
+#authSubmitBtn {
+  background-color: #000000 !important;
   color: #ffffff !important;
 }
