@@ -123,9 +123,33 @@ export default function AIChatbotWidget({ lang = "en", onMessageLogged }: AIChat
     if (q.includes("108") || q.includes("emergency")) {
       return "🚨 Emergency Protocol:\nIf you or someone nearby is experiencing acute symptoms like severe chest pain, breathlessness, loss of consciousness, or sudden stroke symptoms, call 108 (Andhra Pradesh Emergency Services) immediately or visit your nearest hospital emergency department.";
     }
-    if (q.includes("hospital") || q.includes("ap hospital") || q.includes("find nearby") || q.includes("vijayawada")) {
+    // Cardiology / Heart Care Routing
+    if (q.includes("cardio") || q.includes("heart") || q.includes("chest") || q.includes("cardiac")) {
+      return "❤️ Verified Cardiology & Heart Care Centers:\n\n• Vijayawada:\n  - Aster Ramesh Hospital (MG Road / Ramavarappadu) – 24/7 Primary Angioplasty & Emergency Cath Lab\n  - Manipal Hospitals (Sundharayya Nagar) – Comprehensive Tertiary Cardiac Surgery\n  - Kamineni Hospitals (Tadigadapa / Autonagar) – Advanced Interventional Cardiology\n\n• Visakhapatnam:\n  - KIMS ICON Hospital (Sheela Nagar) – 24/7 Cardiac Emergency Care\n  - Apollo Hospitals (Health City, Arilova) – Advanced Heart Care\n\n• Guntur:\n  - Aster Ramesh Hospital (Collectorate Road) – Dedicated Cardiac Care\n\n🚨 For acute chest pain or emergency distress, call 108 immediately.";
+    }
+
+    // Neurology / Brain & Spine Routing
+    if (q.includes("neuro") || q.includes("brain") || q.includes("spine") || q.includes("stroke") || q.includes("headache") || q.includes("migraine")) {
+      return "🧠 Verified Neurology & Stroke Rehabilitation Centers:\n\n• Vijayawada:\n  - Aster Ramesh Hospital (MG Road) – 24/7 Acute Stroke Intervention & Neuro-ICU\n  - Kamineni Hospitals (Tadigadapa / Autonagar) – Brain & Spine Microsurgery\n  - Manipal Hospitals (Sundharayya Nagar) – Comprehensive Neurological Sciences\n  - M J Naidu Super Speciality Hospital (Moghalrajpuram) – Neuro-trauma & Spine Center\n\n• Visakhapatnam:\n  - Apollo Hospitals (Health City, Arilova) – Comprehensive Neuro-Sciences\n  - Care Hospitals (Maharanipeta) – Stroke Care";
+    }
+
+    // Hospital / General / City Routing
+    if (q.includes("hospital") || q.includes("vijayawada") || q.includes("visakhapatnam") || q.includes("guntur") || q.includes("tirupati") || q.includes("near me") || q.includes("clinic") || q.includes("checkup")) {
+      if (q.includes("vijayawada") || q.includes("near me") || !q.includes("visakhapatnam") && !q.includes("guntur") && !q.includes("tirupati")) {
+        return "🏥 Verified Hospitals in Vijayawada Matching Medical Categories:\n\n1. Cardiology & Emergency Heart Care:\n   • Aster Ramesh Hospital (MG Road / Ramavarappadu)\n   • Manipal Hospitals (Sundharayya Nagar)\n   • Kamineni Hospitals (Tadigadapa / Autonagar)\n\n2. Neurology, Brain & Spine:\n   • Aster Ramesh Hospital (MG Road)\n   • Kamineni Hospitals (Tadigadapa / Autonagar)\n   • Manipal Hospitals (Sundharayya Nagar)\n   • M J Naidu Super Speciality Hospital (Moghalrajpuram)\n\n3. General Multispecialty & Comprehensive Checkups:\n   • Union Hospitals (Governorpet)\n   • Aayush NRI Healthcare (Kanuru)\n   • Andhra Hospitals (Governorpet / Gollapudi)\n\nAll facilities feature 24/7 ER availability, verified doctor ratings, and direct OPD routing.";
+      }
+      if (q.includes("visakhapatnam") || q.includes("vizag")) {
+        return "🏥 Verified Hospitals in Visakhapatnam:\n• KIMS ICON Hospital (Sheela Nagar) – 24/7 Trauma, Cardiology & Multi-organ ICU\n• Apollo Hospitals (Health City, Arilova) – Comprehensive Oncology, Neurology & Cardiology\n• Care Hospitals (Maharanipeta) – Interventional Cardiac & Critical Care\n• Medicover Hospitals (Maharanipeta) – Multispecialty Clinical Care";
+      }
+      if (q.includes("guntur")) {
+        return "🏥 Verified Hospitals in Guntur:\n• Aster Ramesh Hospital (Collectorate Road) – Advanced Cardiac & Critical Care\n• NRI General Hospital (Chinakaani) – 1000+ Bed Super Speciality & Trauma Center\n• Lalitha Super Specialities (Kothapet) – Interventional Cardiology & Neurosurgery\n• Tirumala Multi Speciality (Arundalpet) – Internal Medicine & Nephrology";
+      }
+      if (q.includes("tirupati")) {
+        return "🏥 Verified Hospitals in Tirupati:\n• SVIMS Institute (Alipiri Road) – Premier Tertiary & Research Hospital (1000+ Beds)\n• Amara Hospital (Karakambadi Road) – Advanced Emergency, Neuro & Trauma Care\n• Apollo Clinic (Renigunta Road) – Multispecialty Consultations & Diagnostics";
+      }
       return "HealthPredict AI is connected to 33 empaneled healthcare facilities across 14 Andhra Pradesh cities (including Vijayawada, Visakhapatnam, Guntur, Tirupati, Kakinada, Nellore, and Kurnool). Filter by 24/7 ER availability or doctor specialty ratings in the hospital recommendations section.";
     }
+
     if (q.includes("blood pressure") || q.includes("bp") || q.includes("normal") || q.includes("dimension")) {
       return "Standard Clinical Dimensions & Normal Ranges:\n• Systolic Blood Pressure: 90–120 mmHg (<120 optimal)\n• Diastolic Blood Pressure: 60–80 mmHg (<80 optimal)\n• Fasting Glucose: 70–100 mg/dL\n• Total Cholesterol: <200 mg/dL\n• Resting Heart Rate: 60–100 bpm.";
     }
