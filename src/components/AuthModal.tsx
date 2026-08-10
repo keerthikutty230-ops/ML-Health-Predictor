@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 
 import { neonSignInWithGoogle, neonSignInWithEmail } from "@/lib/neonClient";
 import { neonSignInWithGoogleOAuth } from "@/lib/neonAuthClient";
+import { authClient } from "@/lib/auth/client";
 
 export interface AuthUser {
   uid: string;
@@ -60,6 +61,13 @@ export default function AuthModal({
     setIsSubmitting(true);
     setError(null);
     try {
+      if (typeof window !== "undefined" && authClient?.signIn?.social) {
+        await authClient.signIn.social({
+          provider: "google",
+          callbackURL: window.location.origin,
+        });
+      }
+
       const user = await neonSignInWithGoogleOAuth();
       if (user) {
         onLoginSuccess(user);
@@ -67,8 +75,18 @@ export default function AuthModal({
         onClose();
       }
     } catch (e: any) {
-      setError("Google authentication notice: " + (e?.message || "Please try again"));
-      setIsSubmitting(false);
+      console.warn("Google OAuth trigger notice:", e);
+      try {
+        const fallbackUser = await neonSignInWithGoogleOAuth();
+        if (fallbackUser) {
+          onLoginSuccess(fallbackUser);
+          setIsSubmitting(false);
+          onClose();
+        }
+      } catch (err: any) {
+        setError("Google authentication notice: " + (err?.message || "Please try again"));
+        setIsSubmitting(false);
+      }
     }
   };
 
