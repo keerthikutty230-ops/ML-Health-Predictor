@@ -205,7 +205,8 @@ export default function AuthModal({
                     placeholder="Dr. Ramesh Kumar"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full h-10 pl-9 pr-3 rounded-xl bg-[#FAFAFA] border border-[#D1D5DB] text-xs text-[#000000] placeholder-[#9CA3AF] focus:bg-white focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+                    style={{ color: "#000000", WebkitTextFillColor: "#000000" }}
+                    className="auth-modal-input w-full h-10 pl-9 pr-3 rounded-xl bg-[#FAFAFA] border border-[#D1D5DB] text-xs text-[#000000] font-medium placeholder-[#9CA3AF] focus:bg-white focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
                   />
                 </div>
               </div>
@@ -221,7 +222,8 @@ export default function AuthModal({
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-[#FAFAFA] border border-[#D1D5DB] text-xs text-[#000000] placeholder-[#9CA3AF] focus:bg-white focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+                  style={{ color: "#000000", WebkitTextFillColor: "#000000" }}
+                  className="auth-modal-input w-full h-10 pl-9 pr-3 rounded-xl bg-[#FAFAFA] border border-[#D1D5DB] text-xs text-[#000000] font-medium placeholder-[#9CA3AF] focus:bg-white focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
                 />
               </div>
             </div>
@@ -236,7 +238,8 @@ export default function AuthModal({
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-10 pl-9 pr-10 rounded-xl bg-[#FAFAFA] border border-[#D1D5DB] text-xs text-[#000000] placeholder-[#9CA3AF] focus:bg-white focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+                  style={{ color: "#000000", WebkitTextFillColor: "#000000" }}
+                  className="auth-modal-input w-full h-10 pl-9 pr-10 rounded-xl bg-[#FAFAFA] border border-[#D1D5DB] text-xs text-[#000000] font-medium placeholder-[#9CA3AF] focus:bg-white focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
                 />
                 <button
                   type="button"

@@ -570,15 +570,40 @@ button#appUserProfileBtn * {
   color: #000000 !important;
 }
 
-#authModalBox input {
+#authModalBox input,
+.auth-modal-input,
+input[type="text"],
+input[type="email"],
+input[type="password"] {
   background-color: #FAFAFA !important;
   color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
   border-color: #D1D5DB !important;
 }
 
-#authModalBox input:focus {
+#authModalBox input:focus,
+.auth-modal-input:focus {
   background-color: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
   border-color: #000000 !important;
+}
+
+#authModalBox input::placeholder,
+.auth-modal-input::placeholder {
+  color: #9CA3AF !important;
+  -webkit-text-fill-color: #9CA3AF !important;
+  opacity: 1 !important;
+}
+
+#authModalBox input:-webkit-autofill,
+#authModalBox input:-webkit-autofill:hover, 
+#authModalBox input:-webkit-autofill:focus,
+.auth-modal-input:-webkit-autofill {
+  -webkit-text-fill-color: #000000 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #FAFAFA inset !important;
+  box-shadow: 0 0 0px 1000px #FAFAFA inset !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 #googleAuthModalBtn {
