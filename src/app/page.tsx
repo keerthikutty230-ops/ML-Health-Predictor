@@ -1201,82 +1201,77 @@ export default function Page() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             
             {/* Bento Card 1: Large ML Classifier */}
-            <motion.div className="md:col-span-8 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4"
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <div className="md:col-span-8 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4 border border-[#E5E7E4] shadow-sm bg-white">
               <div className="h-12 w-12 rounded-xl bg-[#181818]/5 flex items-center justify-center">
                 <Gauge className="h-6 w-6 text-black" />
               </div>
-              <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_1_title")}</h3>
-              <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
+              <h3 className="text-xl font-bold text-[#000000]">{t("bento_1_title")}</h3>
+              <p className="text-sm text-[#1A1816] leading-relaxed font-normal">
                 {t("bento_1_desc")}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
-                <div className="p-3 rounded-xl bg-[#F4EBDD]/60 border border-[#0D0B09]/10">
-                  <div className="text-[#0D0B09]/60">Glucose Weight</div>
+                <div className="p-3 rounded-xl bg-[#FAFAFA] border border-[#E5E7E4]">
+                  <div className="text-[#524646] font-semibold">Glucose Weight</div>
                   <div className="text-sm font-bold text-blue-700">24.5%</div>
                 </div>
-                <div className="p-3 rounded-xl bg-[#F4EBDD]/60 border border-[#0D0B09]/10">
-                  <div className="text-[#0D0B09]/60">BMI Weight</div>
+                <div className="p-3 rounded-xl bg-[#FAFAFA] border border-[#E5E7E4]">
+                  <div className="text-[#524646] font-semibold">BMI Weight</div>
                   <div className="text-sm font-bold text-emerald-700">15.3%</div>
                 </div>
-                <div className="p-3 rounded-xl bg-[#F4EBDD]/60 border border-[#0D0B09]/10">
-                  <div className="text-[#0D0B09]/60">Systolic BP Weight</div>
+                <div className="p-3 rounded-xl bg-[#FAFAFA] border border-[#E5E7E4]">
+                  <div className="text-[#524646] font-semibold">Systolic BP Weight</div>
                   <div className="text-sm font-bold text-amber-700">14.8%</div>
                 </div>
-                <div className="p-3 rounded-xl bg-[#F4EBDD]/60 border border-[#0D0B09]/10">
-                  <div className="text-[#0D0B09]/60">Cholesterol Weight</div>
+                <div className="p-3 rounded-xl bg-[#FAFAFA] border border-[#E5E7E4]">
+                  <div className="text-[#524646] font-semibold">Cholesterol Weight</div>
                   <div className="text-sm font-bold text-rose-700">13.0%</div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Bento Card 2: KNN Similarity Proofs */}
-            <motion.div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4"
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}>
+            <div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4 border border-[#E5E7E4] shadow-sm bg-white">
               <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
                 <Users className="h-6 w-6 text-amber-500" />
               </div>
-              <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_2_title")}</h3>
-              <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
+              <h3 className="text-xl font-bold text-[#000000]">{t("bento_2_title")}</h3>
+              <p className="text-sm text-[#1A1816] leading-relaxed font-normal">
                 {t("bento_2_desc")}
               </p>
-            </motion.div>
+            </div>
 
             {/* Bento Card 3: 33 AP Hospitals */}
-            <motion.div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4"
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
+            <div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4 border border-[#E5E7E4] shadow-sm bg-white">
               <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-700">
                 <MapPinned className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_3_title")}</h3>
-              <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
+              <h3 className="text-xl font-bold text-[#000000]">{t("bento_3_title")}</h3>
+              <p className="text-sm text-[#1A1816] leading-relaxed font-normal">
                 {t("bento_3_desc")}
               </p>
-            </motion.div>
+            </div>
 
             {/* Bento Card 4: 3-Tier Care Guardrails */}
-            <motion.div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4"
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
+            <div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4 border border-[#E5E7E4] shadow-sm bg-white">
               <div className="h-12 w-12 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-700">
                 <ClipboardList className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_4_title")}</h3>
-              <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
+              <h3 className="text-xl font-bold text-[#000000]">{t("bento_4_title")}</h3>
+              <p className="text-sm text-[#1A1816] leading-relaxed font-normal">
                 {t("bento_4_desc")}
               </p>
-            </motion.div>
+            </div>
 
             {/* Bento Card 5: Medication Interaction Checker */}
-            <motion.div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4 border-2 border-[#1E3F20]/30"
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }}>
+            <div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4 border-2 border-[#1E3F20]/30 shadow-sm bg-white">
               <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
                 <Pill className="h-6 w-6 text-blue-600" />
               </div>
-              <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_6_title")}</h3>
-              <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
+              <h3 className="text-xl font-bold text-[#000000]">{t("bento_6_title")}</h3>
+              <p className="text-sm text-[#1A1816] leading-relaxed font-normal">
                 {t("bento_6_desc")}
               </p>
-            </motion.div>
+            </div>
 
           </div>
         </section>
@@ -1285,9 +1280,12 @@ export default function Page() {
         <section id="inspiring-journeys-section" className="bg-[#F4EBDD] py-24 px-4 border-t border-[#EED4AC] text-[#0D0B09]">
           <div className="max-w-7xl mx-auto space-y-12">
             <div className="text-center space-y-4">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-[#0D0B09] font-sans">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-[#000000] font-sans">
                 Inspiring Journeys Of Strength And Hope
               </h2>
+              <p className="text-sm text-[#524646] max-w-2xl mx-auto font-medium">
+                Real recovery milestones and personalized clinical routing journeys powered by HealthPredict AI.
+              </p>
             </div>
 
             {/* Stories card grid showing 3 items based on index */}
@@ -1331,29 +1329,33 @@ export default function Page() {
               ].slice(activeStoryIndex, activeStoryIndex + 3).map((item, idx) => (
                 <div
                   key={idx}
-                  className="group relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-[#EED4AC] bg-neutral-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[#0D0B09]/20"
+                  className="w-full flex flex-col rounded-3xl overflow-hidden border border-[#EED4AC] bg-white shadow-md transition-all duration-300 hover:shadow-xl hover:border-[#0D0B09]/30"
                 >
-                  {/* Grayscale hover to color image */}
-                  <Image
-                    src={item.image}
-                    alt={`${item.name} recovery photo`}
-                    fill
-                    priority
-                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500 ease-in-out"
-                  />
+                  {/* Patient Image */}
+                  <div className="relative w-full h-56 overflow-hidden bg-neutral-100">
+                    <Image
+                      src={item.image}
+                      alt={`${item.name} recovery photo`}
+                      fill
+                      priority
+                      className="object-cover object-center"
+                    />
+                  </div>
 
-                  {/* Absolute slide-in panel on hover */}
-                  <div className="absolute inset-x-0 bottom-0 bg-[#0D0B09]/95 text-[#F4EBDD] p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out flex flex-col justify-end min-h-[50%] backdrop-blur-sm">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[10px] font-bold text-[#F4EBDD]/65 uppercase tracking-wider">
-                        <span>{item.diagnosis}</span>
-                        <span>{item.age} yrs</span>
+                  {/* Always-Visible Solid High-Contrast Content */}
+                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4 bg-white text-[#000000]">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-block px-2.5 py-1 rounded-full bg-[#1E3F20]/10 text-[#1E3F20] text-[11px] font-bold tracking-wide">
+                          {item.diagnosis}
+                        </span>
+                        <span className="text-xs font-bold text-[#524646]">{item.age} yrs</span>
                       </div>
-                      <h3 className="text-lg font-black text-white leading-tight">
+                      <h3 className="text-xl font-bold text-[#000000] leading-tight">
                         {item.name}
                       </h3>
                     </div>
-                    <p className="text-xs text-[#F4EBDD]/80 leading-relaxed font-medium mt-2">
+                    <p className="text-xs sm:text-sm text-[#1A1816] leading-relaxed font-normal">
                       "{item.story}"
                     </p>
                   </div>
@@ -1943,13 +1945,6 @@ export default function Page() {
               </Button>
               <Button variant="outline" onClick={handleReset} disabled={loading} className="h-12 border-slate-700 text-slate-300 hover:bg-slate-800 rounded-xl">{t("btn_reset")}</Button>
             </motion.div>
-
-            <div className="rounded-xl border border-white/10 bg-[#121C2D] p-3">
-              <div className="flex items-start gap-2 text-xs text-slate-400">
-                <Shield className="h-3.5 w-3.5 mt-0.5 text-blue-400 shrink-0" />
-                <p>Uses <strong>500 synthetic patient records</strong> (Kaggle clinical benchmark). <strong>Educational portal, not a medical diagnosis.</strong></p>
-              </div>
-            </div>
           </div>
 
           {/* ============ RIGHT PANEL: RESULTS & MEDICATION CHECKER ============ */}

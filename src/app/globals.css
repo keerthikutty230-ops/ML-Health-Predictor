@@ -635,3 +635,30 @@ input[type="password"] {
   background-color: #000000 !important;
   color: #ffffff !important;
 }
+
+/* High Contrast and Stable Information Sections Rules */
+#inspiring-journeys-section {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+#inspiring-journeys-section h2,
+#inspiring-journeys-section h3 {
+  color: #000000 !important;
+}
+
+#inspiring-journeys-section p {
+  color: #1A1816 !important;
+  opacity: 1 !important;
+}
+
+.clinical-card h3,
+.clinical-card h4,
+.clinical-card h2 {
+  color: #000000 !important;
+}
+
+.clinical-card p,
+.clinical-card span:not([class*="bg-[#1E3F20]"] *):not([class*="bg-blue-"] *):not([class*="bg-emerald-"] *):not([class*="bg-rose-"] *) {
+  color: #1A1816 !important;
+}
