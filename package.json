@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build && node -e \"const fs=require('fs'); const path=require('path'); const copy=(src,dest)=>{if(fs.existsSync(src)){fs.mkdirSync(path.dirname(dest),{recursive:true}); fs.cpSync(src,dest,{recursive:true,force:true})}}; copy('.next/static','.next/standalone/.next/static'); copy('public','.next/standalone/public');\"",
-    "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
+    "build": "prisma generate && next build",
+    "start": "next start",
     "lint": "eslint .",
     "db:push": "prisma db push --accept-data-loss",
     "db:generate": "prisma generate",

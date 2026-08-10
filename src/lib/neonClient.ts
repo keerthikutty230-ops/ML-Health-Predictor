@@ -16,7 +16,7 @@ function buildStableUserId(provider: "google" | "email", email: string): string 
 }
 
 export function getNeonSql() {
-  if (!DATABASE_URL) return null;
+  if (!DATABASE_URL || DATABASE_URL.startsWith("file:") || !DATABASE_URL.includes("://")) return null;
   try {
     return neon(DATABASE_URL);
   } catch (e) {

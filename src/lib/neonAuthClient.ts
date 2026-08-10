@@ -7,7 +7,7 @@ const NEON_AUTH_BASE_URL = process.env.NEXT_PUBLIC_NEON_AUTH_URL || "https://aut
 const DATABASE_URL = process.env.DATABASE_URL || process.env.NEXT_PUBLIC_NEON_DATABASE_URL;
 
 export function getNeonSql() {
-  if (!DATABASE_URL) return null;
+  if (!DATABASE_URL || DATABASE_URL.startsWith("file:") || !DATABASE_URL.includes("://")) return null;
   try {
     return neon(DATABASE_URL);
   } catch (e) {
