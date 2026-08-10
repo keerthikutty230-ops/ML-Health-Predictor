@@ -499,6 +499,7 @@ export default function Page() {
   const [medications, setMedications] = useState<string[]>([]);
   const [healthConditions, setHealthConditions] = useState<string[]>([]);
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
+  const [mobileTappedStory, setMobileTappedStory] = useState<number | null>(null);
 
   const openAuthModal = useCallback((mode: "signin" | "signup" = "signin") => {
     setAuthModalInitialMode(mode);
@@ -1361,19 +1362,26 @@ export default function Page() {
               ].slice(activeStoryIndex, activeStoryIndex + 3).map((item, idx) => (
                 <div
                   key={idx}
-                  className="group relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-[#EED4AC] bg-neutral-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[#0D0B09]/20"
+                  onClick={() => setMobileTappedStory(prev => prev === idx ? null : idx)}
+                  className="group relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-[#EED4AC] bg-neutral-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[#0D0B09]/20 cursor-pointer"
                 >
-                  {/* Grayscale hover to color image */}
+                  {/* Grayscale hover to color image on desktop; tap toggle on mobile */}
                   <Image
                     src={item.image}
                     alt={`${item.name} recovery photo`}
                     fill
                     priority
-                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500 ease-in-out"
+                    className={`object-cover transition-all duration-500 ease-in-out ${
+                      mobileTappedStory === idx ? "grayscale-0" : "grayscale group-hover:grayscale-0"
+                    }`}
                   />
 
-                  {/* Absolute slide-in panel on hover */}
-                  <div className="absolute inset-x-0 bottom-0 bg-[#0D0B09]/95 text-[#F4EBDD] p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out flex flex-col justify-end min-h-[50%] backdrop-blur-sm">
+                  {/* Absolute slide-in panel on hover (desktop) & tap (mobile) */}
+                  <div
+                    className={`absolute inset-x-0 bottom-0 bg-[#0D0B09]/95 text-[#F4EBDD] p-5 transition-transform duration-500 ease-in-out flex flex-col justify-end min-h-[50%] backdrop-blur-sm ${
+                      mobileTappedStory === idx ? "translate-y-0" : "translate-y-full group-hover:translate-y-0"
+                    }`}
+                  >
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-[10px] font-bold text-[#F4EBDD]/65 uppercase tracking-wider">
                         <span>{item.diagnosis}</span>
@@ -1397,6 +1405,7 @@ export default function Page() {
                 <button
                   type="button"
                   onClick={() => {
+                    setMobileTappedStory(null);
                     setActiveStoryIndex((prev) => (prev > 0 ? prev - 1 : 2));
                   }}
                   className="h-10 w-10 rounded-full border border-[#0D0B09]/20 bg-transparent text-[#0D0B09] hover:bg-[#0D0B09] hover:text-[#F4EBDD] flex items-center justify-center transition-all duration-300 cursor-pointer animate-none"
@@ -1410,7 +1419,10 @@ export default function Page() {
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => setActiveStoryIndex(idx)}
+                      onClick={() => {
+                        setMobileTappedStory(null);
+                        setActiveStoryIndex(idx);
+                      }}
                       className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                         activeStoryIndex === idx
                           ? "w-8 bg-[#0D0B09]"
@@ -1424,6 +1436,7 @@ export default function Page() {
                 <button
                   type="button"
                   onClick={() => {
+                    setMobileTappedStory(null);
                     setActiveStoryIndex((prev) => (prev < 2 ? prev + 1 : 0));
                   }}
                   className="h-10 w-10 rounded-full border border-[#0D0B09]/20 bg-transparent text-[#0D0B09] hover:bg-[#0D0B09] hover:text-[#F4EBDD] flex items-center justify-center transition-all duration-300 cursor-pointer animate-none"
