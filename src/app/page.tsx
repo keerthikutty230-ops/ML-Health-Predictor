@@ -1018,36 +1018,7 @@ export default function Page() {
                     )}
                   </AnimatePresence>
                 </div>
-              ) : (
-                <div className="flex items-center gap-2 relative z-30 pointer-events-auto">
-                  <button
-                    id="signInBtn"
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      openAuthModal("signin");
-                    }}
-                    className="border border-[#0D0B09]/20 bg-[#EED4AC] hover:bg-[#e3caa2] text-[#0D0B09] font-bold text-xs h-9 rounded-xl px-3.5 flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
-                  >
-                    <User className="h-3.5 w-3.5 text-[#0D0B09]/60" />
-                    <span>{t("auth_signin")}</span>
-                  </button>
-                  <button
-                    id="signUpBtn"
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      openAuthModal("signup");
-                    }}
-                    className="bg-[#1E3F20] hover:bg-[#152e17] text-white font-bold text-xs h-9 rounded-xl px-3.5 flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
-                  >
-                    <UserCheck className="h-3.5 w-3.5 text-[#F4EBDD]" />
-                    <span>{t("auth_signup")}</span>
-                  </button>
-                </div>
-              )}
+              ) : null}
 
               <Badge className="hidden md:inline-flex bg-[#1E3F20] text-white border-transparent px-3 py-1 text-xs font-medium rounded-full shadow-sm">
                 <span className="h-2 w-2 rounded-full bg-white animate-pulse mr-2" />
@@ -1237,8 +1208,8 @@ export default function Page() {
             {/* Bento Card 1: Large ML Classifier */}
             <motion.div className="md:col-span-8 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4"
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                <Gauge className="h-6 w-6 text-blue-600" />
+              <div className="h-12 w-12 rounded-xl bg-[#181818]/5 flex items-center justify-center">
+                <Gauge className="h-6 w-6 text-black" />
               </div>
               <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_1_title")}</h3>
               <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
@@ -1303,8 +1274,8 @@ export default function Page() {
             {/* Bento Card 5: Medication Interaction Checker */}
             <motion.div className="md:col-span-4 clinical-card clinical-card-interactive rounded-2xl p-6 space-y-4 border-2 border-[#1E3F20]/30"
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }}>
-              <div className="h-12 w-12 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-700">
-                <Pill className="h-6 w-6" />
+              <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                <Pill className="h-6 w-6 text-blue-600" />
               </div>
               <h3 className="text-xl font-bold text-[#0D0B09]">{t("bento_6_title")}</h3>
               <p className="text-sm text-[#0D0B09]/80 leading-relaxed">
