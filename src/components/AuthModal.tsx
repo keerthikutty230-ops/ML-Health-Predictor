@@ -6,6 +6,7 @@ import { Language, TRANSLATIONS } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
 
 import { neonSignInWithGoogle, neonSignInWithEmail } from "@/lib/neonClient";
+import { neonSignInWithGoogleOAuth } from "@/lib/neonAuthClient";
 
 export interface AuthUser {
   uid: string;
@@ -57,16 +58,16 @@ export default function AuthModal({
   if (!isOpen) return null;
 
   const handleGoogleSignIn = async () => {
-    const trimmedGoogleEmail = googleEmail.trim();
-    if (!trimmedGoogleEmail) {
-      setError("Please enter the Google email connected to your account.");
-      return;
-    }
-
     setIsSubmitting(true);
     setError(null);
     try {
-      const user = await neonSignInWithGoogle(trimmedGoogleEmail);
+      const trimmedGoogleEmail = googleEmail.trim();
+      let user: AuthUser;
+      if (trimmedGoogleEmail) {
+        user = await neonSignInWithGoogle(trimmedGoogleEmail);
+      } else {
+        user = await neonSignInWithGoogleOAuth();
+      }
       onLoginSuccess(user);
       setIsSubmitting(false);
       onClose();
